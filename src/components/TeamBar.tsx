@@ -6,12 +6,13 @@ interface TeamBarProps {
   team: Team;
   isWinner: boolean;
   rank: number;
+  targetPoints: number;
+  isOvertaking: boolean;
 }
 
-const TARGET_POINTS = 200;
-
-export const TeamBar = ({ team, isWinner, rank }: TeamBarProps) => {
-  const percentage = Math.min((team.points / TARGET_POINTS) * 100, 100);
+export const TeamBar = ({ team, isWinner, rank, targetPoints, isOvertaking }: TeamBarProps) => {
+  const percentage = Math.min((team.points / targetPoints) * 100, 100);
+  const isCloseToWinning = percentage >= 80;
   
   const colorClasses = {
     cyan: "bg-gradient-cyan shadow-glow-cyan",
@@ -29,7 +30,8 @@ export const TeamBar = ({ team, isWinner, rank }: TeamBarProps) => {
     <div
       className={cn(
         "relative transition-all duration-500",
-        isWinner && "animate-winner-spotlight z-10"
+        isWinner && "animate-winner-spotlight z-10",
+        isOvertaking && "animate-shake z-20"
       )}
     >
       {/* Rank Badge */}
@@ -71,19 +73,28 @@ export const TeamBar = ({ team, isWinner, rank }: TeamBarProps) => {
           </div>
 
           {/* Progress Bar Container */}
-          <div className="relative h-12 bg-card rounded-lg overflow-hidden border border-border">
+          <div className={cn(
+            "relative h-12 bg-card rounded-lg overflow-hidden border transition-all duration-300",
+            isCloseToWinning ? "border-2 border-winner-gold" : "border-border"
+          )}>
             {/* Progress Fill */}
             <div
               className={cn(
                 "absolute inset-y-0 left-0 transition-all duration-300 ease-out",
                 colorClasses[team.color],
                 team.isCombo && "animate-pulse-glow",
-                isWinner && "animate-shake"
+                isWinner && "animate-shake",
+                isCloseToWinning && "animate-pulse-glow"
               )}
               style={{ width: `${percentage}%` }}
             >
               {/* Inner Glow Effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              
+              {/* Close to Winning Effect */}
+              {isCloseToWinning && (
+                <div className="absolute inset-0 bg-gradient-to-r from-winner-gold/20 via-winner-gold-glow/30 to-winner-gold/20 animate-pulse" />
+              )}
             </div>
 
             {/* Target Line */}
@@ -114,6 +125,20 @@ export const TeamBar = ({ team, isWinner, rank }: TeamBarProps) => {
             glowClasses[team.color]
           )}
         />
+      )}
+      
+      {/* Close to Winning Glow */}
+      {isCloseToWinning && !isWinner && (
+        <div className="absolute inset-0 -z-10 rounded-lg blur-xl opacity-40 shadow-glow-winner animate-pulse" />
+      )}
+
+      {/* Overtaking Effect */}
+      {isOvertaking && (
+        <div className="absolute -top-2 -right-2 animate-bounce">
+          <div className="bg-gradient-winner text-background text-xs font-bold px-2 py-1 rounded-full">
+            🚀 OVERTAKE!
+          </div>
+        </div>
       )}
     </div>
   );

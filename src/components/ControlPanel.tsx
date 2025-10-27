@@ -15,21 +15,25 @@ import { cn } from "@/lib/utils";
 interface ControlPanelProps {
   playerTeam: TeamId | null;
   isPlaying: boolean;
+  targetPoints: number;
   onJoinTeam: (teamId: TeamId) => void;
   onAddPoint: () => void;
   onTogglePlay: () => void;
   onRestart: () => void;
   onSimulateWin: (teamId: TeamId) => void;
+  onTargetPointsChange: (points: number) => void;
 }
 
 export const ControlPanel = ({
   playerTeam,
   isPlaying,
+  targetPoints,
   onJoinTeam,
   onAddPoint,
   onTogglePlay,
   onRestart,
   onSimulateWin,
+  onTargetPointsChange,
 }: ControlPanelProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showDebug, setShowDebug] = useState(false);
@@ -156,11 +160,28 @@ export const ControlPanel = ({
 
           {/* Debug Section */}
           {showDebug && (
-            <div className="bg-secondary p-4 rounded-lg space-y-2 border border-border">
+            <div className="bg-secondary p-4 rounded-lg space-y-3 border border-border">
               <h4 className="text-sm font-bold text-muted-foreground flex items-center gap-2">
                 <Bug className="w-4 h-4" />
                 Debug Controls
               </h4>
+              
+              {/* Target Points Control */}
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">
+                  Target Points: {targetPoints}
+                </label>
+                <input
+                  type="range"
+                  min="50"
+                  max="500"
+                  step="10"
+                  value={targetPoints}
+                  onChange={(e) => onTargetPointsChange(Number(e.target.value))}
+                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+              </div>
+
               <div className="grid grid-cols-3 gap-2">
                 <Button
                   onClick={() => onSimulateWin(1)}
