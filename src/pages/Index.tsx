@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { TeamBar } from "@/components/TeamBar";
+import { RaceTrack } from "@/components/RaceTrack";
 import { WinAnimation } from "@/components/WinAnimation";
 import { ControlPanel } from "@/components/ControlPanel";
 import { GameState, Team, TeamId, TeamColor } from "@/types/game";
@@ -56,8 +56,9 @@ const Index = () => {
   });
   const [prevRankings, setPrevRankings] = useState<TeamId[]>([1, 2, 3]);
   const [showWinAnimation, setShowWinAnimation] = useState(false);
-  const [screenShake, setScreenShake] = useState(false);
   const [clashTeams, setClashTeams] = useState<TeamId[]>([]);
+  const [countdown, setCountdown] = useState(3);
+  const [hasStarted, setHasStarted] = useState(false);
   const tickIntervalRef = useRef<NodeJS.Timeout>();
 
   // Game tick logic
@@ -94,12 +95,6 @@ const Index = () => {
 
         // Update streak
         const newStreak = pointsToAdd >= 12 ? team.streak + 1 : Math.max(0, team.streak - 1);
-
-        // Trigger screen shake on huge gains
-        if (pointsToAdd >= 15 && !prev.winner) {
-          setScreenShake(true);
-          setTimeout(() => setScreenShake(false), 500);
-        }
 
         return {
           ...team,
@@ -154,9 +149,21 @@ const Index = () => {
     });
   }, [targetPoints, prevRankings]);
 
+  // Countdown timer
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (!hasStarted) {
+      setHasStarted(true);
+    }
+  }, [countdown, hasStarted]);
+
   // Setup game tick interval
   useEffect(() => {
-    if (gameState.isPlaying && !gameState.winner) {
+    if (gameState.isPlaying && !gameState.winner && hasStarted) {
       tickIntervalRef.current = setInterval(gameTick, TICK_INTERVAL);
     } else {
       if (tickIntervalRef.current) {
@@ -169,7 +176,7 @@ const Index = () => {
         clearInterval(tickIntervalRef.current);
       }
     };
-  }, [gameState.isPlaying, gameState.winner, gameTick]);
+  }, [gameState.isPlaying, gameState.winner, gameTick, hasStarted]);
 
   // Join team handler
   const handleJoinTeam = (teamId: TeamId) => {
@@ -232,6 +239,8 @@ const Index = () => {
     });
     setPrevRankings([1, 2, 3]);
     setShowWinAnimation(false);
+    setCountdown(3);
+    setHasStarted(false);
     toast.success("Game Restarted!", { icon: "🔄" });
   };
 
@@ -264,7 +273,28 @@ const Index = () => {
     : null;
 
   return (
-    <div className={`min-h-screen pb-96 ${screenShake ? 'animate-screen-shake' : ''}`}>
+    <div className="min-h-screen pb-96">
+      {/* Countdown Overlay */}
+      {countdown > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-md">
+          <div className="text-center">
+            <div className="text-[200px] font-black animate-scale-in text-winner-gold-glow drop-shadow-[0_0_40px_rgba(255,215,0,0.6)]">
+              {countdown}
+            </div>
+            <p className="text-3xl font-bold text-muted-foreground mt-4">Get Ready!</p>
+          </div>
+        </div>
+      )}
+      {countdown === 0 && !hasStarted && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-md">
+          <div className="text-center">
+            <div className="text-[200px] font-black animate-scale-in text-winner-gold-glow drop-shadow-[0_0_60px_rgba(255,215,0,0.8)]">
+              GO!
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-30">
         <div className="container mx-auto px-6 py-6">
@@ -282,15 +312,16 @@ const Index = () => {
 
       {/* Main Game Area */}
       <main className="container mx-auto px-6 py-12">
-        <div className="space-y-8">
+        <div className="space-y-2">
           {sortedTeams.map((team, index) => {
             const prevRank = prevRankings.indexOf(team.id) + 1;
             const currentRank = index + 1;
             const isOvertaking = prevRank > currentRank;
             const isClashing = clashTeams.includes(team.id);
+            const isLastPlace = currentRank === sortedTeams.length;
             
             return (
-              <TeamBar
+              <RaceTrack
                 key={team.id}
                 team={team}
                 isWinner={team.id === gameState.winner}
@@ -298,6 +329,7 @@ const Index = () => {
                 targetPoints={targetPoints}
                 isOvertaking={isOvertaking}
                 isClashing={isClashing}
+                isLastPlace={isLastPlace}
               />
             );
           })}

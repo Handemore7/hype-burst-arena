@@ -4,6 +4,7 @@ import { Crown, Sparkles, Trophy } from "lucide-react";
 import { ParticleEffect } from "./ParticleEffect";
 import Matter from "matter-js";
 import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
 
 interface WinAnimationProps {
   teams: Team[];
@@ -453,6 +454,36 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
                     transition: 'none',
                   }}
                 >
+          {/* Character with Emotion */}
+                  <div className={`absolute -top-44 left-0 w-full text-center ${actualRank !== 0 ? 'animate-loser-shrink' : ''}`}>
+                    {/* Emotional Character */}
+                    <div className={cn(
+                      "text-8xl mx-auto mb-2",
+                      actualRank === 0 && "animate-bounce",
+                      actualRank === 1 && "animate-pulse",
+                      actualRank === 2 && "animate-float-up"
+                    )}>
+                      {actualRank === 0 ? "🎉" : actualRank === 1 ? "😊" : "😭"}
+                    </div>
+                    
+                    {/* Emotion Text */}
+                    {actualRank === 0 && (
+                      <p className="text-lg font-black text-winner-gold-glow animate-pulse mb-2">
+                        CHAMPION!
+                      </p>
+                    )}
+                    {actualRank === 1 && (
+                      <p className="text-sm font-bold text-muted-foreground mb-2">
+                        Not bad... 👏
+                      </p>
+                    )}
+                    {actualRank === 2 && (
+                      <p className="text-sm font-bold text-loser-gray animate-pulse mb-2">
+                        Better luck next time... 💔
+                      </p>
+                    )}
+                  </div>
+
           {/* Team Info Above Podium */}
                   <div className={`absolute -top-28 left-0 w-full text-center space-y-1 ${actualRank !== 0 ? 'animate-loser-shrink' : ''}`}>
                     {actualRank === 0 && <Crown className="w-10 h-10 text-winner-gold mx-auto animate-crown-bounce" />}
