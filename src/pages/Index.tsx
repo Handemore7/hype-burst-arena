@@ -11,11 +11,16 @@ const COMBO_DURATION = 5000; // 5 seconds
 const COMBO_CHANCE = 0.05; // 5% chance per tick
 
 const sillyNames = [
+  ["Cyber Sharks", "Neon Ninjas", "Azure Avengers"],
+  ["Void Vikings", "Mystic Mages", "Royal Rascals"],
+  ["Solar Samurai", "Golden Goblins", "Flame Phoenixes"],
+  ["Pixel Pirates", "Aqua Alpacas", "Tidal Toasters"],
+  ["Cosmic Cats", "Purple Potatoes", "Grape Gremlins"],
+  ["Honey Badgers", "Spicy Spaghetti", "Toasty Tacos"],
   ["Chaos Llamas", "Dancing Pickles", "Screaming Bananas"],
   ["Wobbly Wizards", "Confused Unicorns", "Flying Tacos"],
   ["Dizzy Dolphins", "Bouncing Potatoes", "Sleepy Ninjas"],
   ["Grumpy Cupcakes", "Hyper Penguins", "Sparkle Sloths"],
-  ["Clumsy Dragons", "Giggly Ghosts", "Fancy Flamingos"],
 ];
 
 const availableColors: TeamColor[] = ["red", "purple", "blue", "green", "yellow"];
@@ -34,9 +39,9 @@ const getRandomColors = (): TeamColor[] => {
 const createInitialTeams = (names: string[]): Team[] => {
   const colors = getRandomColors();
   return [
-    { id: 1, name: names[0], points: 0, color: colors[0], isCombo: false, comboEndTime: null },
-    { id: 2, name: names[1], points: 0, color: colors[1], isCombo: false, comboEndTime: null },
-    { id: 3, name: names[2], points: 0, color: colors[2], isCombo: false, comboEndTime: null },
+    { id: 1, name: names[0], points: 0, color: colors[0], isCombo: false, comboEndTime: null, streak: 0, lastGain: 0 },
+    { id: 2, name: names[1], points: 0, color: colors[1], isCombo: false, comboEndTime: null, streak: 0, lastGain: 0 },
+    { id: 3, name: names[2], points: 0, color: colors[2], isCombo: false, comboEndTime: null, streak: 0, lastGain: 0 },
   ];
 };
 
@@ -51,6 +56,8 @@ const Index = () => {
   });
   const [prevRankings, setPrevRankings] = useState<TeamId[]>([1, 2, 3]);
   const [showWinAnimation, setShowWinAnimation] = useState(false);
+  const [screenShake, setScreenShake] = useState(false);
+  const [clashTeams, setClashTeams] = useState<TeamId[]>([]);
   const tickIntervalRef = useRef<NodeJS.Timeout>();
 
   // Game tick logic
@@ -83,12 +90,24 @@ const Index = () => {
         // Calculate points to add
         const basePoints = Math.floor(Math.random() * 6) + 5; // 5-10 points
         const pointsToAdd = isCombo ? basePoints * 2 : basePoints;
+        const newPoints = Math.min(team.points + pointsToAdd, targetPoints);
+
+        // Update streak
+        const newStreak = pointsToAdd >= 12 ? team.streak + 1 : Math.max(0, team.streak - 1);
+
+        // Trigger screen shake on huge gains
+        if (pointsToAdd >= 15 && !prev.winner) {
+          setScreenShake(true);
+          setTimeout(() => setScreenShake(false), 500);
+        }
 
         return {
           ...team,
-          points: Math.min(team.points + pointsToAdd, targetPoints),
+          points: newPoints,
           isCombo,
           comboEndTime,
+          streak: newStreak,
+          lastGain: pointsToAdd,
         };
       });
 
@@ -100,6 +119,17 @@ const Index = () => {
       if (JSON.stringify(newRankings) !== JSON.stringify(prevRankings)) {
         setPrevRankings(newRankings);
       }
+
+      // Detect clash moments (teams within 10 points)
+      const sortedByPoints = [...updatedTeams].sort((a, b) => b.points - a.points);
+      const clashingTeams: TeamId[] = [];
+      for (let i = 0; i < sortedByPoints.length - 1; i++) {
+        const diff = sortedByPoints[i].points - sortedByPoints[i + 1].points;
+        if (diff < 10 && diff >= 0) {
+          clashingTeams.push(sortedByPoints[i].id, sortedByPoints[i + 1].id);
+        }
+      }
+      setClashTeams([...new Set(clashingTeams)]);
 
       // Check for winner
       const winner = updatedTeams.find((team) => team.points >= targetPoints);
@@ -155,7 +185,7 @@ const Index = () => {
     setGameState((prev) => {
       const updatedTeams = prev.teams.map((team) =>
         team.id === prev.playerTeam
-          ? { ...team, points: Math.min(team.points + 1, targetPoints) }
+          ? { ...team, points: Math.min(team.points + 1, targetPoints), lastGain: 1 }
           : team
       );
 
@@ -234,7 +264,7 @@ const Index = () => {
     : null;
 
   return (
-    <div className="min-h-screen pb-96">
+    <div className={`min-h-screen pb-96 ${screenShake ? 'animate-screen-shake' : ''}`}>
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-30">
         <div className="container mx-auto px-6 py-6">
@@ -257,6 +287,7 @@ const Index = () => {
             const prevRank = prevRankings.indexOf(team.id) + 1;
             const currentRank = index + 1;
             const isOvertaking = prevRank > currentRank;
+            const isClashing = clashTeams.includes(team.id);
             
             return (
               <TeamBar
@@ -266,6 +297,7 @@ const Index = () => {
                 rank={currentRank}
                 targetPoints={targetPoints}
                 isOvertaking={isOvertaking}
+                isClashing={isClashing}
               />
             );
           })}

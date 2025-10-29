@@ -453,20 +453,25 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
                     transition: 'none',
                   }}
                 >
-                  {/* Team Info Above Podium */}
-                  <div className="absolute -top-24 left-0 w-full text-center space-y-1">
-                    {actualRank === 0 && <Crown className="w-8 h-8 text-winner-gold mx-auto animate-crown-bounce" />}
-                    <h3 className="text-xl font-bold">{team.name}</h3>
-                    <p className="text-3xl font-black text-winner-gold-glow">{Math.floor(team.points)}</p>
+          {/* Team Info Above Podium */}
+                  <div className={`absolute -top-28 left-0 w-full text-center space-y-1 ${actualRank !== 0 ? 'animate-loser-shrink' : ''}`}>
+                    {actualRank === 0 && <Crown className="w-10 h-10 text-winner-gold mx-auto animate-crown-bounce" />}
+                    <h3 className={`text-xl font-bold ${actualRank === 0 ? 'text-2xl' : ''}`}>{team.name}</h3>
+                    <p className={`text-3xl font-black ${actualRank === 0 ? 'text-4xl text-winner-gold-glow' : 'text-muted-foreground'}`}>
+                      {Math.floor(team.points)}
+                    </p>
+                    {actualRank === 0 && team.streak > 0 && (
+                      <p className="text-sm text-winner-gold">🔥 {team.streak}x Streak</p>
+                    )}
                   </div>
 
                   {/* Podium Block */}
                   <div
-                    className="w-full rounded-t-lg flex items-center justify-center text-2xl font-black"
+                    className={`w-full rounded-t-lg flex items-center justify-center text-3xl font-black ${actualRank !== 0 ? 'animate-loser-shrink' : ''}`}
                     style={{
                       height: heights[actualRank as 0 | 1 | 2],
-                      background: colorMap[team.color],
-                      boxShadow: `0 0 30px ${colorMap[team.color]}`,
+                      background: actualRank === 0 ? 'linear-gradient(135deg, hsl(var(--winner-gold)), hsl(var(--winner-gold-glow)))' : `linear-gradient(135deg, ${colorMap[team.color]}, hsl(var(--loser-gray)))`,
+                      boxShadow: actualRank === 0 ? `0 0 60px ${colorMap[team.color]}` : `0 0 20px ${colorMap[team.color]}50`,
                     }}
                   >
                     {positions[actualRank]}

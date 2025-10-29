@@ -9,6 +9,8 @@ export interface Team {
   color: TeamColor;
   isCombo: boolean;
   comboEndTime: number | null;
+  streak: number;
+  lastGain: number;
 }
 
 export interface GameState {

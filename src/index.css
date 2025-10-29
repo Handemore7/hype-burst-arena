@@ -56,9 +56,12 @@ All colors MUST be HSL.
     --team-amber: 43 96% 56%;
     --team-amber-glow: 43 96% 66%;
 
-    /* Winner Color */
-    --winner-gold: 45 93% 47%;
-    --winner-gold-glow: 45 93% 57%;
+    /* Winner Colors */
+    --winner-gold: 43 96% 56%;
+    --winner-gold-glow: 43 100% 70%;
+    --loser-gray: 240 5% 40%;
+    --danger-red: 0 84% 60%;
+    --momentum-fire: 25 95% 53%;
 
     /* Gradients */
     --gradient-red: linear-gradient(135deg, hsl(0 84% 60%), hsl(0 84% 70%));
@@ -68,8 +71,11 @@ All colors MUST be HSL.
     --gradient-yellow: linear-gradient(135deg, hsl(48 96% 53%), hsl(48 96% 63%));
     --gradient-cyan: linear-gradient(135deg, hsl(199 89% 48%), hsl(199 89% 58%));
     --gradient-amber: linear-gradient(135deg, hsl(43 96% 56%), hsl(43 96% 66%));
-    --gradient-winner: linear-gradient(135deg, hsl(45 93% 47%), hsl(45 93% 67%));
+    --gradient-winner: linear-gradient(135deg, hsl(43 96% 56%), hsl(43 100% 70%));
+    --gradient-momentum: linear-gradient(90deg, hsl(25 95% 53%), hsl(43 96% 56%));
+    --gradient-danger: linear-gradient(135deg, hsl(0 84% 60%), hsl(0 84% 70%));
     --gradient-bg: linear-gradient(180deg, hsl(222 47% 5%), hsl(222 47% 8%));
+    --gradient-combo: linear-gradient(135deg, hsl(43 96% 56%), hsl(25 95% 53%));
 
     /* Shadows */
     --shadow-red: 0 0 30px hsl(0 84% 60% / 0.5);
@@ -145,12 +151,95 @@ All colors MUST be HSL.
       transform: translateY(0) rotate(-15deg);
     }
     50% {
-      transform: translateY(-10px) rotate(-15deg);
+      transform: translateY(-10px) rotate(15deg);
     }
+  }
+
+  @keyframes screen-shake {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-4px, 2px); }
+    20% { transform: translate(4px, -2px); }
+    30% { transform: translate(-4px, -2px); }
+    40% { transform: translate(4px, 2px); }
+    50% { transform: translate(-4px, -2px); }
+    60% { transform: translate(4px, 2px); }
+    70% { transform: translate(-4px, -2px); }
+    80% { transform: translate(4px, -2px); }
+    90% { transform: translate(-4px, 2px); }
+  }
+
+  @keyframes momentum-pulse {
+    0%, 100% { 
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% { 
+      transform: scale(1.1);
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes clash-flash {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes loser-shrink {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0.7);
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes float-up {
+    0% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100px) scale(1.2);
+      opacity: 0;
+    }
+  }
+
+  @keyframes fire-flicker {
+    0%, 100% { opacity: 1; transform: scaleY(1); }
+    25% { opacity: 0.8; transform: scaleY(1.1); }
+    50% { opacity: 1; transform: scaleY(0.9); }
+    75% { opacity: 0.9; transform: scaleY(1.05); }
   }
 
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-screen-shake {
+    animation: screen-shake 0.5s ease-in-out;
+  }
+
+  .animate-momentum-pulse {
+    animation: momentum-pulse 0.8s ease-in-out infinite;
+  }
+
+  .animate-clash-flash {
+    animation: clash-flash 0.3s ease-in-out 3;
+  }
+
+  .animate-loser-shrink {
+    animation: loser-shrink 1s ease-out forwards;
+    animation-delay: 0.5s;
+  }
+
+  .animate-float-up {
+    animation: float-up 2s ease-out forwards;
+  }
+
+  .animate-fire-flicker {
+    animation: fire-flicker 0.3s ease-in-out infinite;
   }
 
   .animate-shake {
@@ -200,6 +289,10 @@ All colors MUST be HSL.
 
   .bg-gradient-winner {
     background: var(--gradient-winner);
+  }
+
+  .bg-gradient-combo {
+    background: var(--gradient-combo);
   }
 
   .shadow-glow-red {
