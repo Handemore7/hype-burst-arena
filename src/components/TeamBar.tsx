@@ -14,15 +14,23 @@ export const TeamBar = ({ team, isWinner, rank, targetPoints, isOvertaking }: Te
   const percentage = Math.min((team.points / targetPoints) * 100, 100);
   const isCloseToWinning = percentage >= 80;
   
-  const colorClasses = {
-    cyan: "bg-gradient-cyan shadow-glow-cyan",
+  const colorClasses: Record<string, string> = {
+    red: "bg-gradient-red shadow-glow-red",
     purple: "bg-gradient-purple shadow-glow-purple",
+    blue: "bg-gradient-blue shadow-glow-blue",
+    green: "bg-gradient-green shadow-glow-green",
+    yellow: "bg-gradient-yellow shadow-glow-yellow",
+    cyan: "bg-gradient-cyan shadow-glow-cyan",
     amber: "bg-gradient-amber shadow-glow-amber",
   };
 
-  const glowClasses = {
-    cyan: "shadow-glow-cyan",
+  const glowClasses: Record<string, string> = {
+    red: "shadow-glow-red",
     purple: "shadow-glow-purple",
+    blue: "shadow-glow-blue",
+    green: "shadow-glow-green",
+    yellow: "shadow-glow-yellow",
+    cyan: "shadow-glow-cyan",
     amber: "shadow-glow-amber",
   };
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { TeamBar } from "@/components/TeamBar";
 import { WinAnimation } from "@/components/WinAnimation";
 import { ControlPanel } from "@/components/ControlPanel";
-import { GameState, Team, TeamId } from "@/types/game";
+import { GameState, Team, TeamId, TeamColor } from "@/types/game";
 import { toast } from "sonner";
 import { Trophy } from "lucide-react";
 
@@ -18,16 +18,27 @@ const sillyNames = [
   ["Clumsy Dragons", "Giggly Ghosts", "Fancy Flamingos"],
 ];
 
+const availableColors: TeamColor[] = ["red", "purple", "blue", "green", "yellow"];
+
 const getRandomNames = () => {
   const nameSet = sillyNames[Math.floor(Math.random() * sillyNames.length)];
   return nameSet;
 };
 
-const createInitialTeams = (names: string[]): Team[] => [
-  { id: 1, name: names[0], points: 0, color: "cyan", isCombo: false, comboEndTime: null },
-  { id: 2, name: names[1], points: 0, color: "purple", isCombo: false, comboEndTime: null },
-  { id: 3, name: names[2], points: 0, color: "amber", isCombo: false, comboEndTime: null },
-];
+const getRandomColors = (): TeamColor[] => {
+  // Shuffle the colors array and pick first 3
+  const shuffled = [...availableColors].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 3);
+};
+
+const createInitialTeams = (names: string[]): Team[] => {
+  const colors = getRandomColors();
+  return [
+    { id: 1, name: names[0], points: 0, color: colors[0], isCombo: false, comboEndTime: null },
+    { id: 2, name: names[1], points: 0, color: colors[1], isCombo: false, comboEndTime: null },
+    { id: 3, name: names[2], points: 0, color: colors[2], isCombo: false, comboEndTime: null },
+  ];
+};
 
 const Index = () => {
   const [targetPoints, setTargetPoints] = useState(200);

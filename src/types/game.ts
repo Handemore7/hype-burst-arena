@@ -1,10 +1,12 @@
 export type TeamId = 1 | 2 | 3;
 
+export type TeamColor = "red" | "purple" | "blue" | "green" | "yellow";
+
 export interface Team {
   id: TeamId;
   name: string;
   points: number;
-  color: "cyan" | "purple" | "amber";
+  color: TeamColor;
   isCombo: boolean;
   comboEndTime: number | null;
 }
