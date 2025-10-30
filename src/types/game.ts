@@ -19,12 +19,3 @@ export interface GameState {
   isPlaying: boolean;
   playerTeam: TeamId | null;
 }
-
-export interface Particle {
-  id: string;
-  x: number;
-  y: number;
-  color: string;
-  tx: number;
-  ty: number;
-}
