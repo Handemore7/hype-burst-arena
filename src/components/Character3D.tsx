@@ -1,7 +1,7 @@
-import { useRef, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useRef, useMemo, useState } from "react";
+import { useFrame, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
-import { Text } from "@react-three/drei";
+import { Text, Billboard } from "@react-three/drei";
 
 interface Character3DProps {
   position: [number, number, number];
@@ -22,6 +22,12 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
 
   // Animation state
   const animationTime = useRef(0);
+  const [alternatePose, setAlternatePose] = useState(false);
+
+  const handleClick = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    setAlternatePose(!alternatePose);
+  };
 
   // Create color from HSL string
   const threeColor = useMemo(() => {
@@ -44,30 +50,49 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
 
     if (rank === 1) {
       // Winner: Backflip animation and victory poses
-      const cycle = animationTime.current % 4;
-      
-      if (cycle < 2) {
-        // Backflip
-        groupRef.current.rotation.x = (cycle / 2) * Math.PI * 2;
-        groupRef.current.position.y = position[1] + Math.sin((cycle / 2) * Math.PI) * 2;
+      if (!alternatePose) {
+        const cycle = animationTime.current % 5;
+        
+        if (cycle < 1.5) {
+          // Enhanced backflip with better rotation
+          const t = cycle / 1.5;
+          groupRef.current.rotation.x = t * Math.PI * 2;
+          groupRef.current.position.y = position[1] + Math.sin(t * Math.PI) * 3;
+          
+          // Arms and legs follow the flip
+          if (leftArmRef.current) leftArmRef.current.rotation.z = t * Math.PI * 2;
+          if (rightArmRef.current) rightArmRef.current.rotation.z = -t * Math.PI * 2;
+        } else {
+          // Victory pose with arms up
+          groupRef.current.rotation.x = 0;
+          groupRef.current.position.y = position[1] + Math.abs(Math.sin(animationTime.current * 4)) * 0.5;
+          
+          if (leftArmRef.current) {
+            leftArmRef.current.rotation.z = Math.sin(animationTime.current * 3) * 0.3 + 2.5;
+            leftArmRef.current.rotation.x = 0;
+          }
+          if (rightArmRef.current) {
+            rightArmRef.current.rotation.z = -Math.sin(animationTime.current * 3) * 0.3 - 2.5;
+            rightArmRef.current.rotation.x = 0;
+          }
+        }
       } else {
-        // Victory pose
+        // Alternate: Victorious standing pose with fist pump
         groupRef.current.rotation.x = 0;
         groupRef.current.position.y = position[1];
         
-        // Arms up in victory
+        const pumpCycle = Math.sin(animationTime.current * 5);
         if (leftArmRef.current) {
-          leftArmRef.current.rotation.z = Math.sin(animationTime.current * 3) * 0.5 + 2.5;
+          leftArmRef.current.rotation.z = 0.5;
+          leftArmRef.current.rotation.x = -1.5 + pumpCycle * 0.5;
         }
         if (rightArmRef.current) {
-          rightArmRef.current.rotation.z = -Math.sin(animationTime.current * 3) * 0.5 - 2.5;
+          rightArmRef.current.rotation.z = -0.5;
+          rightArmRef.current.rotation.x = -1.5 - pumpCycle * 0.5;
         }
-        
-        // Jumping
-        groupRef.current.position.y = position[1] + Math.abs(Math.sin(animationTime.current * 4)) * 0.5;
       }
       
-      // Head bobbing
+      // Happy head bobbing
       if (headRef.current) {
         headRef.current.rotation.y = Math.sin(animationTime.current * 2) * 0.3;
         headRef.current.position.y = 0.8 + Math.sin(animationTime.current * 3) * 0.1;
@@ -77,63 +102,105 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
       groupRef.current.rotation.x = 0;
       groupRef.current.position.y = position[1];
       
-      const clapSpeed = 2;
-      const clapAngle = Math.sin(animationTime.current * clapSpeed * 2) * 0.8;
-      
-      if (leftArmRef.current) {
-        leftArmRef.current.rotation.z = 1.5 + clapAngle;
-        leftArmRef.current.rotation.x = -0.5;
+      if (!alternatePose) {
+        // Standing still, serious
+        if (leftArmRef.current) {
+          leftArmRef.current.rotation.z = 0.3;
+          leftArmRef.current.rotation.x = 0;
+        }
+        if (rightArmRef.current) {
+          rightArmRef.current.rotation.z = -0.3;
+          rightArmRef.current.rotation.x = 0;
+        }
+      } else {
+        // Alternate: Clapping in front
+        const clapSpeed = 3;
+        const clapAngle = Math.sin(animationTime.current * clapSpeed * 2) * 0.8;
+        
+        if (leftArmRef.current) {
+          leftArmRef.current.rotation.z = 1.5 + clapAngle;
+          leftArmRef.current.rotation.x = -0.5;
+        }
+        if (rightArmRef.current) {
+          rightArmRef.current.rotation.z = -1.5 - clapAngle;
+          rightArmRef.current.rotation.x = -0.5;
+        }
       }
-      if (rightArmRef.current) {
-        rightArmRef.current.rotation.z = -1.5 - clapAngle;
-        rightArmRef.current.rotation.x = -0.5;
-      }
       
-      // Slight head nod
+      // Serious, minimal head movement
       if (headRef.current) {
-        headRef.current.rotation.x = Math.sin(animationTime.current * 2) * 0.1;
+        headRef.current.rotation.x = 0;
+        headRef.current.rotation.y = Math.sin(animationTime.current) * 0.05;
       }
     } else {
       // Third place: On knees, crying
-      groupRef.current.rotation.x = 0;
-      
-      // Kneeling position
-      groupRef.current.position.y = position[1] - 0.5;
-      groupRef.current.rotation.x = 0.3;
-      
-      // Arms down in defeat
-      if (leftArmRef.current) {
-        leftArmRef.current.rotation.z = 0.5;
-        leftArmRef.current.position.y = -0.3;
-      }
-      if (rightArmRef.current) {
-        rightArmRef.current.rotation.z = -0.5;
-        rightArmRef.current.position.y = -0.3;
-      }
-      
-      // Head hanging down, shaking
-      if (headRef.current) {
-        headRef.current.rotation.x = 0.5 + Math.sin(animationTime.current * 5) * 0.1;
-        headRef.current.rotation.z = Math.sin(animationTime.current * 3) * 0.1;
-      }
-      
-      // Legs folded
-      if (leftLegRef.current) {
-        leftLegRef.current.rotation.x = -1.2;
-      }
-      if (rightLegRef.current) {
-        rightLegRef.current.rotation.x = -1.2;
+      if (!alternatePose) {
+        // Kneeling, head down, crying
+        groupRef.current.position.y = position[1] - 0.6;
+        groupRef.current.rotation.x = 0.4;
+        
+        // Arms on knees
+        if (leftArmRef.current) {
+          leftArmRef.current.rotation.z = 0.8;
+          leftArmRef.current.rotation.x = -0.8;
+          leftArmRef.current.position.y = -0.4;
+        }
+        if (rightArmRef.current) {
+          rightArmRef.current.rotation.z = -0.8;
+          rightArmRef.current.rotation.x = -0.8;
+          rightArmRef.current.position.y = -0.4;
+        }
+        
+        // Legs folded under
+        if (leftLegRef.current) {
+          leftLegRef.current.rotation.x = -1.5;
+        }
+        if (rightLegRef.current) {
+          rightLegRef.current.rotation.x = -1.5;
+        }
+        
+        // Head hanging down, shaking from crying
+        if (headRef.current) {
+          headRef.current.rotation.x = 0.6 + Math.sin(animationTime.current * 5) * 0.1;
+          headRef.current.rotation.z = Math.sin(animationTime.current * 3) * 0.15;
+        }
+      } else {
+        // Alternate: Standing, covering eyes in shame
+        groupRef.current.position.y = position[1];
+        groupRef.current.rotation.x = 0;
+        
+        // Arms covering face
+        if (leftArmRef.current) {
+          leftArmRef.current.rotation.z = 1.2;
+          leftArmRef.current.rotation.x = -1.8;
+          leftArmRef.current.position.y = 0.4;
+        }
+        if (rightArmRef.current) {
+          rightArmRef.current.rotation.z = -1.2;
+          rightArmRef.current.rotation.x = -1.8;
+          rightArmRef.current.position.y = 0.4;
+        }
+        
+        // Legs normal standing
+        if (leftLegRef.current) {
+          leftLegRef.current.rotation.x = 0;
+        }
+        if (rightLegRef.current) {
+          rightLegRef.current.rotation.x = 0;
+        }
+        
+        // Head shaking in disbelief
+        if (headRef.current) {
+          headRef.current.rotation.y = Math.sin(animationTime.current * 4) * 0.2;
+          headRef.current.rotation.x = 0.3;
+        }
       }
     }
 
-    // Message bubble floating
-    if (messageRef.current) {
-      messageRef.current.position.y = 2 + Math.sin(animationTime.current * 2) * 0.2;
-    }
   });
 
   return (
-    <group ref={groupRef} position={position}>
+    <group ref={groupRef} position={position} onClick={handleClick}>
       {/* Head */}
       <mesh ref={headRef} position={[0, 0.8, 0]}>
         <sphereGeometry args={[0.3, 32, 32]} />
@@ -151,8 +218,8 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
       </mesh>
 
       {/* Mouth - changes based on rank */}
-      <mesh position={[0, 0.7, 0.28]} rotation={[0, 0, rank === 1 ? 0 : rank === 3 ? Math.PI : 0]}>
-        <torusGeometry args={[0.08, 0.02, 16, 32, Math.PI]} />
+      <mesh position={[0, 0.7, 0.28]} rotation={[0, 0, rank === 1 ? 0 : rank === 2 ? Math.PI / 2 : Math.PI]}>
+        <torusGeometry args={[0.08, 0.02, 16, 32, rank === 1 ? Math.PI : rank === 2 ? 0.1 : Math.PI]} />
         <meshStandardMaterial color="#000000" />
       </mesh>
 
@@ -186,44 +253,46 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
         <meshStandardMaterial color={threeColor} />
       </mesh>
 
-      {/* Speech Bubble */}
-      <group ref={messageRef} position={[0, 2, 0]}>
-        {/* Bubble background */}
-        <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[2, 0.8, 0.1]} />
-          <meshStandardMaterial color="#ffffff" opacity={0.95} transparent />
-        </mesh>
-        
-        {/* Bubble pointer */}
-        <mesh position={[0, -0.5, 0]} rotation={[0, 0, Math.PI / 4]}>
-          <boxGeometry args={[0.2, 0.2, 0.1]} />
-          <meshStandardMaterial color="#ffffff" opacity={0.95} transparent />
-        </mesh>
-        
-        {/* Message text */}
-        <Text
-          position={[0, 0.15, 0.06]}
-          fontSize={0.15}
-          color="#000000"
-          anchorX="center"
-          anchorY="middle"
-          maxWidth={1.8}
-        >
-          {message}
-        </Text>
-        
-        {/* Team name */}
-        <Text
-          position={[0, -0.15, 0.06]}
-          fontSize={0.12}
-          color="#666666"
-          anchorX="center"
-          anchorY="middle"
-          fontWeight="bold"
-        >
-          - {teamName}
-        </Text>
-      </group>
+      {/* Speech Bubble - always faces camera */}
+      <Billboard position={[0, 2.2 + Math.sin(animationTime.current * 2) * 0.2, 0]}>
+        <group>
+          {/* Bubble background */}
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={[2, 0.8, 0.1]} />
+            <meshStandardMaterial color="#ffffff" opacity={0.95} transparent />
+          </mesh>
+          
+          {/* Bubble pointer */}
+          <mesh position={[0, -0.5, 0]} rotation={[0, 0, Math.PI / 4]}>
+            <boxGeometry args={[0.2, 0.2, 0.1]} />
+            <meshStandardMaterial color="#ffffff" opacity={0.95} transparent />
+          </mesh>
+          
+          {/* Message text */}
+          <Text
+            position={[0, 0.15, 0.06]}
+            fontSize={0.15}
+            color="#000000"
+            anchorX="center"
+            anchorY="middle"
+            maxWidth={1.8}
+          >
+            {message}
+          </Text>
+          
+          {/* Team name */}
+          <Text
+            position={[0, -0.15, 0.06]}
+            fontSize={0.12}
+            color="#666666"
+            anchorX="center"
+            anchorY="middle"
+            fontWeight="bold"
+          >
+            - {teamName}
+          </Text>
+        </group>
+      </Billboard>
 
       {/* Confetti particles for winner */}
       {rank === 1 && (
@@ -244,16 +313,27 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
         </group>
       )}
 
-      {/* Tears for third place */}
+      {/* Tears for third place - animated dripping */}
       {rank === 3 && (
         <group>
-          <mesh position={[-0.1, 0.75, 0.28]}>
-            <sphereGeometry args={[0.03, 8, 8]} />
-            <meshStandardMaterial color="#4FC3F7" transparent opacity={0.7} />
+          {/* Left tear */}
+          <mesh position={[-0.1, 0.75 - (animationTime.current % 2) * 0.3, 0.28]}>
+            <sphereGeometry args={[0.04, 8, 8]} />
+            <meshStandardMaterial color="#4FC3F7" transparent opacity={0.8} />
           </mesh>
-          <mesh position={[0.1, 0.75, 0.28]}>
-            <sphereGeometry args={[0.03, 8, 8]} />
-            <meshStandardMaterial color="#4FC3F7" transparent opacity={0.7} />
+          {/* Right tear */}
+          <mesh position={[0.1, 0.75 - ((animationTime.current + 1) % 2) * 0.3, 0.28]}>
+            <sphereGeometry args={[0.04, 8, 8]} />
+            <meshStandardMaterial color="#4FC3F7" transparent opacity={0.8} />
+          </mesh>
+          {/* Additional tear drops */}
+          <mesh position={[-0.1, 0.65, 0.28]}>
+            <sphereGeometry args={[0.02, 8, 8]} />
+            <meshStandardMaterial color="#4FC3F7" transparent opacity={0.6} />
+          </mesh>
+          <mesh position={[0.1, 0.65, 0.28]}>
+            <sphereGeometry args={[0.02, 8, 8]} />
+            <meshStandardMaterial color="#4FC3F7" transparent opacity={0.6} />
           </mesh>
         </group>
       )}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Team } from "@/types/game";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stars, PerspectiveCamera } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, Text } from "@react-three/drei";
 import { Character3D } from "./Character3D";
 import { Button } from "./ui/button";
 import * as THREE from "three";
@@ -12,7 +12,7 @@ interface WinAnimationProps {
   onContinue: () => void;
 }
 
-// Mock messages for teams
+// Mock messages for teams (simulating chat)
 const winnerMessages = [
   "Let's gooooo! 🎉",
   "We're unstoppable!",
@@ -21,6 +21,13 @@ const winnerMessages = [
   "Champions forever! 👑",
   "Too easy, too good!",
   "Victory tastes sweet!",
+  "YESSSS! WE DID IT!",
+  "Flawless victory! 🏆",
+  "Who's next? 😤",
+  "Built different! 💪",
+  "That's how it's done!",
+  "Peak performance! 🔥",
+  "Unbeatable! 🎯",
 ];
 
 const secondPlaceMessages = [
@@ -31,6 +38,11 @@ const secondPlaceMessages = [
   "Almost had it!",
   "GG, well played",
   "Second is still solid!",
+  "Respectable performance",
+  "We put up a fight!",
+  "Could've been worse",
+  "Decent showing today",
+  "We tried our best",
 ];
 
 const thirdPlaceMessages = [
@@ -42,10 +54,51 @@ const thirdPlaceMessages = [
   "Next time... maybe... 😢",
   "I need a break...",
   "Why us?!",
+  "I'm done... 😔",
+  "How did this happen?",
+  "Uninstalling... 💔",
+  "We need practice...",
+  "Absolutely destroyed 😭",
+  "My eyes hurt from crying",
 ];
+
+// Trophy shape with stars
+const TrophyStars = () => {
+  const points: [number, number, number][] = [];
+  
+  // Trophy cup outline
+  for (let i = 0; i < 20; i++) {
+    const angle = (i / 20) * Math.PI * 2;
+    const radius = 15 + Math.sin(i * 0.5) * 2;
+    points.push([
+      Math.cos(angle) * radius,
+      30 + Math.sin(i * 0.3) * 3,
+      Math.sin(angle) * radius,
+    ]);
+  }
+  
+  // Trophy handles
+  for (let i = 0; i < 8; i++) {
+    const t = i / 8;
+    points.push([-18 - t * 3, 28 - t * 2, 0]);
+    points.push([18 + t * 3, 28 - t * 2, 0]);
+  }
+  
+  return (
+    <group>
+      {points.map((pos, i) => (
+        <mesh key={i} position={pos}>
+          <sphereGeometry args={[0.3, 8, 8]} />
+          <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={0.5} />
+        </mesh>
+      ))}
+    </group>
+  );
+};
 
 export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationProps) => {
   const [showScene, setShowScene] = useState(false);
+  const [messageIndices, setMessageIndices] = useState([0, 0, 0]);
 
   const colorMap: Record<string, string> = {
     red: "hsl(0 84% 60%)",
@@ -67,11 +120,22 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
   // Get top 3 teams
   const topThree = sortedTeams.slice(0, 3);
 
-  // Randomly select messages
+  // Rotate messages every 3 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setMessageIndices([
+        Math.floor(Math.random() * winnerMessages.length),
+        Math.floor(Math.random() * secondPlaceMessages.length),
+        Math.floor(Math.random() * thirdPlaceMessages.length),
+      ]);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
   const messages = [
-    winnerMessages[Math.floor(Math.random() * winnerMessages.length)],
-    secondPlaceMessages[Math.floor(Math.random() * secondPlaceMessages.length)],
-    thirdPlaceMessages[Math.floor(Math.random() * thirdPlaceMessages.length)],
+    winnerMessages[messageIndices[0]],
+    secondPlaceMessages[messageIndices[1]],
+    thirdPlaceMessages[messageIndices[2]],
   ];
 
   useEffect(() => {
@@ -110,22 +174,31 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
       {/* 3D Scene */}
       {showScene && (
         <Canvas className="w-full h-full">
-          <PerspectiveCamera makeDefault position={[0, 3, 12]} />
+          <PerspectiveCamera makeDefault position={[0, 5, 12]} />
           
-          {/* Lighting */}
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} />
-          <pointLight position={[-10, -10, -10]} intensity={0.5} />
+          {/* Enhanced Lighting */}
+          <ambientLight intensity={0.8} />
+          <pointLight position={[10, 10, 10]} intensity={1.5} color="#ffffff" />
+          <pointLight position={[-10, 10, -10]} intensity={1} color="#ffffff" />
+          <pointLight position={[0, 15, 5]} intensity={2} color="#FFD700" />
           <spotLight
-            position={[0, 10, 0]}
-            angle={0.6}
+            position={[0, 20, 0]}
+            angle={0.8}
+            penumbra={0.5}
+            intensity={3}
+            castShadow
+            color="#ffffff"
+          />
+          <spotLight
+            position={[0, 10, 10]}
+            angle={0.5}
             penumbra={1}
             intensity={2}
-            castShadow
+            color="#FFD700"
           />
 
-          {/* Starry background */}
-          <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+          {/* Trophy-shaped stars */}
+          <TrophyStars />
 
           {/* Characters and podiums */}
           {displayOrder.map((item, index) => {
@@ -152,23 +225,17 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
                   />
                 </mesh>
 
-                {/* Rank number on podium */}
-                <mesh position={[item.position[0], item.height + 0.1, item.position[2] + 0.76]}>
-                  <planeGeometry args={[0.8, 0.8]} />
-                  <meshStandardMaterial color="#ffffff" />
-                </mesh>
-                <mesh position={[item.position[0], item.height + 0.1, item.position[2] + 0.77]}>
-                  <planeGeometry args={[0.6, 0.6]} />
-                  <meshStandardMaterial
-                    color={item.rank === 1 ? "#FFD700" : item.rank === 2 ? "#C0C0C0" : "#CD7F32"}
-                  />
-                </mesh>
-
-                {/* Points display */}
-                <mesh position={[item.position[0], item.height + 0.1, item.position[2] - 0.76]} rotation={[0, Math.PI, 0]}>
-                  <planeGeometry args={[1.2, 0.4]} />
-                  <meshStandardMaterial color="#000000" opacity={0.7} transparent />
-                </mesh>
+                {/* Points on front wall of podium */}
+                <Text
+                  position={[item.position[0], item.height / 2, item.position[2] + 0.76]}
+                  fontSize={0.4}
+                  color="#000000"
+                  anchorX="center"
+                  anchorY="middle"
+                  fontWeight="bold"
+                >
+                  {Math.floor(item.team.points)}
+                </Text>
               </group>
             );
           })}
@@ -179,14 +246,14 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
             <meshStandardMaterial color="#1a1a2e" metalness={0.3} roughness={0.8} />
           </mesh>
 
-          {/* Optional: Allow user to rotate view slightly */}
+          {/* Auto-rotating camera */}
           <OrbitControls
             enableZoom={false}
             enablePan={false}
+            autoRotate
+            autoRotateSpeed={0.5}
             minPolarAngle={Math.PI / 4}
-            maxPolarAngle={Math.PI / 2}
-            minAzimuthAngle={-Math.PI / 6}
-            maxAzimuthAngle={Math.PI / 6}
+            maxPolarAngle={Math.PI / 2.2}
           />
         </Canvas>
       )}
