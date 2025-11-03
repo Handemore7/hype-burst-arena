@@ -1,73 +1,92 @@
-# Welcome to your Lovable project
+# Hype Burst Arena 🏁
 
-## Project info
+A real-time competition simulation designed for Twitch communities. Watch three teams compete in an automated hype race with dynamic animations, combo mechanics, and a 3D victory celebration.
 
-**URL**: https://lovable.dev/projects/57a1d82f-4ee4-4ce4-8c15-7977b37903c5
+## What is this?
 
-## How can I edit this code?
+Imagine a race where teams automatically gain points, combos randomly trigger for 2x multipliers so the communities would perform harder, and the tension builds as teams get close to winning. That's Hype Burst Arena. It's basically a visual way to keeps viewers engaged during streams with:
 
-There are several ways of editing your application.
+- **Combo system** - teams randomly activate 2x point multipliers (this can work with features like using points to trigger the combos)
+- **Overtaking animations** - smooth position changes with visual feedback (to keep the users notified of changes in the leaderboard)
+- **Hype moments** - when any team hits 85%+ progress, the track goes crazy with effects (so every team can notice and try harder)
+- **3D victory screen** - animated characters on podiums celebrating or crying (I wanted to give a sensation of winning for the 1st place and humilliation for the 3rd place)
 
-**Use Lovable**
+## How to run it
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/57a1d82f-4ee4-4ce4-8c15-7977b37903c5) and start prompting.
+Prerequisites: Node.js (I used v18+) and npm
 
-Changes made via Lovable will be committed automatically to this repo.
+```bash
+# clone the repo
+git clone https://github.com/Handemore7/hype-burst-arena.git
+cd hype-burst-arena
 
-**Use your preferred IDE**
+# install dependencies
+npm install
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# start dev server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Then open `http://localhost:8080` in your browser. The game starts automatically with a 3-2-1-GO countdown. You have a debug controller at the bottom left of the screen to test it.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## What I focused on (and why)
 
-**Use GitHub Codespaces**
+**Visual feedback over everything.** In a stream overlay, viewers need instant understanding of what's happening. So I emphasized:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. **Smooth animations** - No jarring movements. Teams slide into new positions with smooth transitions, overtaking has both parties animated (the overtaker shakes, the overtaken fades slightly).
 
-## What technologies are used for this project?
+2. **Progressive intensity** - The closer you get to winning, the more visual effects stack up. At 85% you get glowing auras and particle trails. At 95% the whole track shakes and "FINAL STRETCH!" appears. It builds hype for the winning team and an idea of trying harder for the other teams without needing to stop and look the details in the leaderboard.
 
-This project is built with:
+3. **Team-coded everything** - Each team has a color that appears in their track border, progress bar, combo badge, and even their 3D podium. You can tell who's who at a glance. (At first wanted to create custom characters or emojis to give the teams some extra customization, but was more complex and added a layer of interaction to the app)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+4. **Victory celebration** - Not just a banner. Full 3D scene with characters doing different animations based on placement. Winner backflips, 2nd place claps or stands calmly, 3rd place cries on his knees. Chat messages rotate above their heads.
 
-## How can I deploy this project?
+4. **No interactions** - The idea of the overlay is for the user to see the leaderboard, just informative so no interaction needed from the user
+I could've added player interaction or betting mechanics, but for a stream overlay you want "set it and forget it" - pure entertainment without requiring input.
 
-Simply open [Lovable](https://lovable.dev/projects/57a1d82f-4ee4-4ce4-8c15-7977b37903c5) and click on Share -> Publish.
+## Tools & Libraries
 
-## Can I connect a custom domain to my Lovable project?
+- **React 18.3** + **TypeScript** - Component architecture, type safety
+- **Vite** - Fast dev server and build tool
+- **Tailwind CSS** - Utility-first styling, custom animations in CSS (index.css)
+- **Three.js** (@react-three/fiber + @react-three/drei) - 3D victory scene with characters
+- **shadcn/ui** - Base UI components (buttons, toasts, tooltips)
+- **Sonner** - Toast notifications for game events
+- **Lucide React** - Icons (crown, flame, trophy, etc.)
 
-Yes, you can!
+## One thing I'd improve with more time
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+**Sound effects and music.** Right now it's all visual, but imagine:
+- Combo activation sound 
+- Overtaking whoosh effects
+- Background music that intensifies as teams approach the finish
+- Victory fanfare when someone wins
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+I'd also add customization options - let streamers pick team names, colors, target points, and maybe even upload custom character emojis or use tools like 7tv and use the most used emote, that way the community is the one getting the customization. Right now it's hardcoded to 3 teams and 600 points and same emojis for all teams.
+
+Also the 3D scene could use better lighting and character models and maybe some particle effects like confetti falling from the sky. And team chat messages could be pulled from actual Twitch chat if integrated properly.
+
+## Time spent
+
+Approximately **~08:30** (eight hours, thirty minutes) total.
+
+## AI Usage
+
+I used GitHub Copilot mainly with model Claude Sonnet 4.5 (for more complex tasks) and Claude Haiku 4.5 (for small and spsecific changes) throughout development. See `/prompts` folder for details.
+
+**Key AI assistance:**
+- Initial brainstorming ideas
+- Key components structure and TypeScript interfaces
+- Three.js 3D scene setup (camera positioning, lighting)
+- Code review and optimization suggestions
+
+**What I did manually:**
+- Game logic and state management architecture
+- Visual design decisions (colors, timing, effects)
+- Animation coordination and UX flow
+- Debugging character positioning and podium colors and texts
+- All the creative decisions about when to show effects
+
+Check `/prompts/FIXES.md` for specific corrections I made to AI output.
+
+---
