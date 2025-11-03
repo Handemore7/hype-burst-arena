@@ -160,7 +160,7 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-b from-primary/30 via-background/90 to-accent/30">
+    <div className="fixed inset-0 z-50 bg-gradient-to-b from-primary/20 via-background to-accent/20">
       {/* Title */}
       <div className="absolute top-8 left-1/2 -translate-x-1/2 z-10 text-center pointer-events-none">
         <h1 className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-winner-gold via-winner-gold-glow to-winner-gold animate-pulse drop-shadow-[0_0_30px_rgba(255,215,0,0.8)]">
