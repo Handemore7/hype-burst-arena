@@ -218,7 +218,7 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
       </mesh>
 
       {/* Mouth - changes based on rank */}
-      <mesh position={[0, 0.7, 0.28]} rotation={[0, 0, rank === 1 ? 0 : rank === 2 ? Math.PI / 2 : Math.PI]}>
+      <mesh position={[0, 0.7, 0.28]} rotation={[0, 0, rank === 3 ? 0 : rank === 2 ? Math.PI / 2 : Math.PI]}>
         <torusGeometry args={[0.08, 0.02, 16, 32, rank === 1 ? Math.PI : rank === 2 ? 0.1 : Math.PI]} />
         <meshStandardMaterial color="#000000" />
       </mesh>
