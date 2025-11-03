@@ -160,13 +160,13 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-b from-background via-background/95 to-primary/20">
+    <div className="fixed inset-0 z-50 bg-gradient-to-b from-primary/20 via-background to-accent/20">
       {/* Title */}
       <div className="absolute top-8 left-1/2 -translate-x-1/2 z-10 text-center pointer-events-none">
-        <h1 className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-winner-gold via-winner-gold-glow to-winner-gold animate-pulse">
+        <h1 className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-winner-gold via-winner-gold-glow to-winner-gold animate-pulse drop-shadow-[0_0_30px_rgba(255,215,0,0.8)]">
           🏆 {winningTeam.name} WINS! 🏆
         </h1>
-        <p className="text-2xl text-muted-foreground mt-2 animate-fade-in">
+        <p className="text-2xl text-foreground mt-2 animate-fade-in font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
           {Math.floor(topThree[0].points)} Points - Absolute Victory!
         </p>
       </div>
@@ -176,16 +176,18 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
         <Canvas className="w-full h-full">
           <PerspectiveCamera makeDefault position={[0, 5, 12]} />
           
-          {/* Enhanced Lighting */}
-          <ambientLight intensity={0.8} />
-          <pointLight position={[10, 10, 10]} intensity={1.5} color="#ffffff" />
-          <pointLight position={[-10, 10, -10]} intensity={1} color="#ffffff" />
-          <pointLight position={[0, 15, 5]} intensity={2} color="#FFD700" />
+          {/* Enhanced Lighting - Much brighter! */}
+          <ambientLight intensity={1.5} />
+          <pointLight position={[10, 10, 10]} intensity={3} color="#ffffff" />
+          <pointLight position={[-10, 10, -10]} intensity={2.5} color="#ffffff" />
+          <pointLight position={[0, 15, 5]} intensity={4} color="#FFD700" />
+          <pointLight position={[5, 8, 5]} intensity={2} color="#FF69B4" />
+          <pointLight position={[-5, 8, 5]} intensity={2} color="#00FFFF" />
           <spotLight
             position={[0, 20, 0]}
             angle={0.8}
             penumbra={0.5}
-            intensity={3}
+            intensity={5}
             castShadow
             color="#ffffff"
           />
@@ -193,9 +195,32 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
             position={[0, 10, 10]}
             angle={0.5}
             penumbra={1}
-            intensity={2}
+            intensity={3}
             color="#FFD700"
           />
+
+          {/* Sky background sphere with stars */}
+          <mesh>
+            <sphereGeometry args={[100, 32, 32]} />
+            <meshBasicMaterial color="#0a0a1a" side={THREE.BackSide} />
+          </mesh>
+
+          {/* Random stars scattered in the sky */}
+          {[...Array(200)].map((_, i) => {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.random() * Math.PI;
+            const radius = 80 + Math.random() * 15;
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.sin(phi) * Math.sin(theta);
+            const z = radius * Math.cos(phi);
+            
+            return (
+              <mesh key={`star-${i}`} position={[x, y, z]}>
+                <sphereGeometry args={[0.1 + Math.random() * 0.2, 8, 8]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+            );
+          })}
 
           {/* Trophy-shaped stars */}
           <TrophyStars />
@@ -215,13 +240,15 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
                   message={item.message}
                 />
 
-                {/* Podium */}
+                {/* Podium - Bright and vibrant! */}
                 <mesh position={[item.position[0], item.height / 2 - 0.5, item.position[2]]}>
                   <boxGeometry args={[1.5, item.height, 1.5]} />
                   <meshStandardMaterial
-                    color={item.rank === 1 ? "#FFD700" : item.rank === 2 ? "#C0C0C0" : "#CD7F32"}
-                    metalness={0.8}
-                    roughness={0.2}
+                    color={item.rank === 1 ? "#FFD700" : item.rank === 2 ? "#E8E8E8" : "#FF8C42"}
+                    metalness={0.9}
+                    roughness={0.1}
+                    emissive={item.rank === 1 ? "#FFD700" : item.rank === 2 ? "#C0C0C0" : "#FF8C42"}
+                    emissiveIntensity={item.rank === 1 ? 0.4 : 0.3}
                   />
                 </mesh>
 
@@ -240,10 +267,16 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
             );
           })}
 
-          {/* Ground */}
+          {/* Ground - Brighter with gradient effect */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
             <planeGeometry args={[50, 50]} />
-            <meshStandardMaterial color="#1a1a2e" metalness={0.3} roughness={0.8} />
+            <meshStandardMaterial 
+              color="#2a2a4e" 
+              metalness={0.6} 
+              roughness={0.4}
+              emissive="#1a1a3e"
+              emissiveIntensity={0.2}
+            />
           </mesh>
 
           {/* Auto-rotating camera */}
