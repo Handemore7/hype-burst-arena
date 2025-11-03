@@ -68,11 +68,11 @@ Also the 3D scene could use better lighting and character models and maybe some 
 
 ## Time spent
 
-Approximately **~08:30** (eight hours, thirty minutes) total.
+Approximately **~08:00** total.
 
 ## AI Usage
 
-I used GitHub Copilot mainly with model Claude Sonnet 4.5 (for more complex tasks) and Claude Haiku 4.5 (for small and spsecific changes) throughout development. See `/prompts` folder for details.
+I used GitHub Copilot mainly with model Claude Sonnet 4.5 (for more complex tasks) and Claude Haiku 4.5 (for small and spsecific changes) throughout development. See `/prompts` folder for details. Also used lovable for initial structure and visual settings
 
 **Key AI assistance:**
 - Initial brainstorming ideas
