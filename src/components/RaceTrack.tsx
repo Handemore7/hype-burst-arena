@@ -24,9 +24,27 @@ export const RaceTrack = ({
 }: RaceTrackProps) => {
   const percentage = Math.min((team.points / targetPoints) * 100, 100);
   const isCloseToWinning = percentage >= 85;
+  const isVeryCloseToWinning = percentage >= 95;
   const [showTrashTalk, setShowTrashTalk] = useState(false);
   const [prevRank, setPrevRank] = useState(rank);
   const [isBeingOvertaken, setIsBeingOvertaken] = useState(false);
+  const [hypeEmojis, setHypeEmojis] = useState<Array<{ id: number; emoji: string; x: number; delay: number }>>([]);
+
+  // Generate floating hype emojis when close to winning
+  useEffect(() => {
+    if (isCloseToWinning && rank === 1) {
+      const emojis = ['🔥', '⚡', '💥', '✨'];
+      const newHypeEmojis = Array.from({ length: 8 }, (_, i) => ({
+        id: Date.now() + i,
+        emoji: emojis[Math.floor(Math.random() * emojis.length)],
+        x: Math.random() * 90 + 5, // 5% to 95% across the track
+        delay: Math.random() * 2,
+      }));
+      setHypeEmojis(newHypeEmojis);
+    } else {
+      setHypeEmojis([]);
+    }
+  }, [isCloseToWinning, rank]);
 
   // Detect when this team is being overtaken (rank increased)
   useEffect(() => {
@@ -135,21 +153,77 @@ export const RaceTrack = ({
 
       {/* Race Track */}
       <div className="relative">
+        {/* Hype Spotlight Background - For any team close to winning */}
+        {isCloseToWinning && (
+          <div 
+            className="absolute inset-0 -inset-x-4 -inset-y-2 rounded-2xl animate-pulse pointer-events-none"
+            style={{
+              background: `radial-gradient(ellipse at center, ${colorMap[team.color]}15 0%, transparent 70%)`,
+              filter: 'blur(20px)',
+            }}
+          />
+        )}
+
+        {/* Floating Hype Emojis */}
+        {hypeEmojis.map((item) => (
+          <div
+            key={item.id}
+            className="absolute text-2xl pointer-events-none animate-float-up-slow opacity-0"
+            style={{
+              left: `${item.x}%`,
+              top: '-40px',
+              animationDelay: `${item.delay}s`,
+              animationDuration: '3s',
+            }}
+          >
+            {item.emoji}
+          </div>
+        ))}
+
+        {/* FINAL STRETCH Text */}
+        {isVeryCloseToWinning && (
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50">
+            <div 
+              className="text-2xl font-black animate-bounce px-4 py-1 rounded-full"
+              style={{
+                color: colorMap[team.color],
+                textShadow: `0 0 20px ${colorMap[team.color]}, 0 0 40px ${colorMap[team.color]}`,
+              }}
+            >
+              🏁 FINAL STRETCH! 🏁
+            </div>
+          </div>
+        )}
+
         {/* Track Background */}
         <div className={cn(
-          "relative h-24 bg-card rounded-xl border-4 overflow-visible transition-all"
+          "relative h-24 bg-card rounded-xl border-4 overflow-visible transition-all duration-500",
+          isVeryCloseToWinning && "animate-subtle-shake"
         )}
           style={{ 
-            borderColor: isCloseToWinning ? 'hsl(var(--winner-gold))' : colorMap[team.color]
+            borderColor: colorMap[team.color],
+            boxShadow: isCloseToWinning 
+              ? `0 0 20px ${colorMap[team.color]}80, 0 0 40px ${colorMap[team.color]}40, 0 0 60px ${colorMap[team.color]}20`
+              : 'none',
+            background: isVeryCloseToWinning
+              ? `linear-gradient(90deg, ${colorMap[team.color]}10, transparent)`
+              : undefined,
           }}
         >
           {/* Progress Trail - Filled portion behind character */}
           <div 
-            className="absolute inset-y-0 left-0 rounded-l-lg transition-all duration-300"
+            className={cn(
+              "absolute inset-y-0 left-0 rounded-l-lg transition-all duration-300",
+              isCloseToWinning && "animate-pulse"
+            )}
             style={{ 
               width: `${percentage}%`,
-              background: `linear-gradient(90deg, ${colorMap[team.color]}40, ${colorMap[team.color]}20)`,
-              boxShadow: `inset 0 0 20px ${colorMap[team.color]}30`
+              background: isCloseToWinning
+                ? `linear-gradient(90deg, ${colorMap[team.color]}60, ${colorMap[team.color]}30, hsl(var(--winner-gold))40)`
+                : `linear-gradient(90deg, ${colorMap[team.color]}40, ${colorMap[team.color]}20)`,
+              boxShadow: isCloseToWinning
+                ? `inset 0 0 30px ${colorMap[team.color]}50, 0 0 20px ${colorMap[team.color]}40`
+                : `inset 0 0 20px ${colorMap[team.color]}30`
             }}
           />
 
@@ -163,10 +237,16 @@ export const RaceTrack = ({
           {/* Track Lines - Filled with team color */}
           <div className="absolute inset-0 flex items-center overflow-hidden">
             <div 
-              className="h-1 transition-all duration-300"
+              className={cn(
+                "h-1 transition-all duration-300",
+                isCloseToWinning && "h-2 animate-pulse"
+              )}
               style={{ 
                 width: `${percentage}%`,
-                backgroundImage: `repeating-linear-gradient(90deg, ${colorMap[team.color]} 0px, ${colorMap[team.color]} 20px, transparent 20px, transparent 40px)`
+                backgroundImage: isCloseToWinning
+                  ? `repeating-linear-gradient(90deg, ${colorMap[team.color]} 0px, hsl(var(--winner-gold)) 10px, ${colorMap[team.color]} 20px, transparent 20px, transparent 40px)`
+                  : `repeating-linear-gradient(90deg, ${colorMap[team.color]} 0px, ${colorMap[team.color]} 20px, transparent 20px, transparent 40px)`,
+                filter: isCloseToWinning ? 'brightness(1.5)' : 'none',
               }} 
             />
           </div>
@@ -186,15 +266,69 @@ export const RaceTrack = ({
               left: `calc(${percentage}% - 32px)`,
             }}
           >
+            {/* Intense Glow Aura - For any team close to winning */}
+            {isCloseToWinning && (
+              <>
+                <div 
+                  className="absolute inset-0 rounded-full animate-ping"
+                  style={{
+                    background: colorMap[team.color],
+                    opacity: 0.3,
+                    scale: 1.8,
+                  }}
+                />
+                <div 
+                  className="absolute inset-0 rounded-full animate-pulse"
+                  style={{
+                    background: `radial-gradient(circle, ${colorMap[team.color]}80, transparent)`,
+                    scale: 2,
+                    filter: 'blur(10px)',
+                  }}
+                />
+              </>
+            )}
+
+            {/* Particle Trail - For any team close to winning */}
+            {isCloseToWinning && (
+              <div className="absolute right-full top-1/2 -translate-y-1/2 flex gap-2 mr-2">
+                <div 
+                  className="w-3 h-3 rounded-full animate-pulse"
+                  style={{ 
+                    background: colorMap[team.color],
+                    boxShadow: `0 0 10px ${colorMap[team.color]}`,
+                    animationDelay: '0s',
+                  }} 
+                />
+                <div 
+                  className="w-2 h-2 rounded-full animate-pulse opacity-60"
+                  style={{ 
+                    background: colorMap[team.color],
+                    boxShadow: `0 0 8px ${colorMap[team.color]}`,
+                    animationDelay: '0.2s',
+                  }} 
+                />
+                <div 
+                  className="w-1 h-1 rounded-full animate-pulse opacity-40"
+                  style={{ 
+                    background: colorMap[team.color],
+                    boxShadow: `0 0 6px ${colorMap[team.color]}`,
+                    animationDelay: '0.4s',
+                  }} 
+                />
+              </div>
+            )}
+
             {/* Character Container */}
             <div className={cn(
-              "relative w-16 h-16 rounded-full flex items-center justify-center text-4xl border-4 transition-all",
-              isCloseToWinning && "animate-pulse-glow scale-110"
+              "relative w-16 h-16 rounded-full flex items-center justify-center text-4xl border-4 transition-all z-10",
+              isCloseToWinning && "scale-125 border-[6px]"
             )}
               style={{
                 background: `linear-gradient(135deg, ${colorMap[team.color]}, ${colorMap[team.color]}dd)`,
                 borderColor: colorMap[team.color],
-                boxShadow: `0 0 20px ${colorMap[team.color]}80, 0 0 40px ${colorMap[team.color]}40`
+                boxShadow: isCloseToWinning
+                  ? `0 0 40px ${colorMap[team.color]}, 0 0 80px ${colorMap[team.color]}80, 0 0 120px ${colorMap[team.color]}40`
+                  : `0 0 20px ${colorMap[team.color]}80, 0 0 40px ${colorMap[team.color]}40`
               }}
             >
               {getCharacterEmoji()}
