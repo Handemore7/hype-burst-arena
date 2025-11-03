@@ -11,6 +11,9 @@ Imagine a race where teams automatically gain points, combos randomly trigger fo
 - **Hype moments** - when any team hits 85%+ progress, the track goes crazy with effects (so every team can notice and try harder)
 - **3D victory screen** - animated characters on podiums celebrating or crying (I wanted to give a sensation of winning for the 1st place and humilliation for the 3rd place)
 
+## Video that explains the app:
+https://www.loom.com/share/5f127f54a1d847a3904d5d799e7e342a
+
 ## How to run it
 
 Prerequisites: Node.js (I used v18+) and npm
