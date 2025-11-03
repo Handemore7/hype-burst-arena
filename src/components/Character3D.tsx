@@ -48,6 +48,9 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
     
     if (!groupRef.current) return;
 
+    // Base Y offset to keep feet on podium (leg extends 0.6 units down from -0.3 position = 0.6 total)
+    const baseYOffset = 0.6;
+
     if (rank === 1) {
       // Winner: Backflip animation and victory poses
       if (!alternatePose) {
@@ -57,7 +60,7 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
           // Enhanced backflip with better rotation
           const t = cycle / 1.5;
           groupRef.current.rotation.x = t * Math.PI * 2;
-          groupRef.current.position.y = position[1] + Math.sin(t * Math.PI) * 3;
+          groupRef.current.position.y = position[1] + baseYOffset + Math.sin(t * Math.PI) * 3;
           
           // Arms and legs follow the flip
           if (leftArmRef.current) leftArmRef.current.rotation.z = t * Math.PI * 2;
@@ -65,7 +68,7 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
         } else {
           // Victory pose with arms up
           groupRef.current.rotation.x = 0;
-          groupRef.current.position.y = position[1] + Math.abs(Math.sin(animationTime.current * 4)) * 0.5;
+          groupRef.current.position.y = position[1] + baseYOffset + Math.abs(Math.sin(animationTime.current * 4)) * 0.5;
           
           if (leftArmRef.current) {
             leftArmRef.current.rotation.z = Math.sin(animationTime.current * 3) * 0.3 + 2.5;
@@ -79,7 +82,7 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
       } else {
         // Alternate: Victorious standing pose with fist pump
         groupRef.current.rotation.x = 0;
-        groupRef.current.position.y = position[1];
+        groupRef.current.position.y = position[1] + baseYOffset;
         
         const pumpCycle = Math.sin(animationTime.current * 5);
         if (leftArmRef.current) {
@@ -135,20 +138,20 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
     } else {
       // Third place: On knees, crying
       if (!alternatePose) {
-        // Kneeling, head down, crying
-        groupRef.current.position.y = position[1] - 0.6;
+        // Kneeling, head down, crying - keep feet on podium even when kneeling
+        groupRef.current.position.y = position[1] + baseYOffset - 0.6;
         groupRef.current.rotation.x = 0.4;
         
-        // Arms on knees
+        // Arms covering face while crying (hands to eyes)
         if (leftArmRef.current) {
-          leftArmRef.current.rotation.z = 0.8;
-          leftArmRef.current.rotation.x = -0.8;
-          leftArmRef.current.position.y = -0.4;
+          leftArmRef.current.rotation.z = 1.4;
+          leftArmRef.current.rotation.x = -2.0;
+          leftArmRef.current.position.y = 0.5;
         }
         if (rightArmRef.current) {
-          rightArmRef.current.rotation.z = -0.8;
-          rightArmRef.current.rotation.x = -0.8;
-          rightArmRef.current.position.y = -0.4;
+          rightArmRef.current.rotation.z = -1.4;
+          rightArmRef.current.rotation.x = -2.0;
+          rightArmRef.current.position.y = 0.5;
         }
         
         // Legs folded under
