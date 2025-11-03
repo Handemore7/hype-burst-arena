@@ -199,6 +199,29 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
             color="#FFD700"
           />
 
+          {/* Sky background sphere with stars */}
+          <mesh>
+            <sphereGeometry args={[100, 32, 32]} />
+            <meshBasicMaterial color="#0a0a1a" side={THREE.BackSide} />
+          </mesh>
+
+          {/* Random stars scattered in the sky */}
+          {[...Array(200)].map((_, i) => {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.random() * Math.PI;
+            const radius = 80 + Math.random() * 15;
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.sin(phi) * Math.sin(theta);
+            const z = radius * Math.cos(phi);
+            
+            return (
+              <mesh key={`star-${i}`} position={[x, y, z]}>
+                <sphereGeometry args={[0.1 + Math.random() * 0.2, 8, 8]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+            );
+          })}
+
           {/* Trophy-shaped stars */}
           <TrophyStars />
 
