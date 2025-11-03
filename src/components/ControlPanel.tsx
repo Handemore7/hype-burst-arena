@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Team, TeamId } from "@/types/game";
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  Bug,
-} from "lucide-react";
+import { Play, Pause, RotateCcw, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ControlPanelProps {
@@ -22,6 +17,7 @@ interface ControlPanelProps {
   onTargetPointsChange: (points: number) => void;
 }
 
+// debug control panel for testing - hidden by default
 export const ControlPanel = ({
   isPlaying,
   teams,
@@ -31,6 +27,7 @@ export const ControlPanel = ({
 }: ControlPanelProps) => {
   const [showDebug, setShowDebug] = useState(false);
 
+  // team color mapping for styled buttons
   const colorMap: Record<string, string> = {
     red: "hsl(var(--team-red))",
     purple: "hsl(var(--team-purple))",

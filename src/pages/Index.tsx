@@ -6,10 +6,12 @@ import { GameState, Team, TeamId, TeamColor } from "@/types/game";
 import { toast } from "sonner";
 import { Trophy } from "lucide-react";
 
-const TICK_INTERVAL = 500; // 0.5 seconds
-const COMBO_DURATION = 5000; // 5 seconds
-const COMBO_CHANCE = 0.05; // 5% chance per tick
+// game timing constants - adjust these to change game speed and behavior
+const TICK_INTERVAL = 500; // game updates every 0.5 seconds
+const COMBO_DURATION = 5000; // combos last 5 seconds
+const COMBO_CHANCE = 0.05; // 5% chance to activate combo each tick
 
+// team name options - randomly selected for each game
 const sillyNames = [
   ["Cyber Sharks", "Neon Ninjas", "Azure Avengers"],
   ["Void Vikings", "Mystic Mages", "Royal Rascals"],
@@ -23,19 +25,22 @@ const sillyNames = [
   ["Grumpy Cupcakes", "Hyper Penguins", "Sparkle Sloths"],
 ];
 
+// available team colors - 5 colors for variety
 const availableColors: TeamColor[] = ["red", "purple", "blue", "green", "yellow"];
 
+// helper to get random team names from the pool
 const getRandomNames = () => {
   const nameSet = sillyNames[Math.floor(Math.random() * sillyNames.length)];
   return nameSet;
 };
 
+// helper to get 3 random unique colors for teams
 const getRandomColors = (): TeamColor[] => {
-  // Shuffle the colors array and pick first 3
   const shuffled = [...availableColors].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, 3);
 };
 
+// create initial team setup with random names and colors
 const createInitialTeams = (names: string[]): Team[] => {
   const colors = getRandomColors();
   return [
@@ -46,29 +51,38 @@ const createInitialTeams = (names: string[]): Team[] => {
 };
 
 const Index = () => {
-  const [targetPoints, setTargetPoints] = useState(500);
+  // game configuration
+  const [targetPoints, setTargetPoints] = useState(600);
   const [teamNames] = useState(getRandomNames());
+  
+  // main game state
   const [gameState, setGameState] = useState<GameState>({
     teams: createInitialTeams(teamNames),
     winner: null,
     isPlaying: true,
     playerTeam: null,
   });
+  
+  // track previous rankings to detect overtakes
   const [prevRankings, setPrevRankings] = useState<TeamId[]>([1, 2, 3]);
+  
+  // UI state
   const [showWinAnimation, setShowWinAnimation] = useState(false);
   const [clashTeams, setClashTeams] = useState<TeamId[]>([]);
   const [countdown, setCountdown] = useState(3);
   const [hasStarted, setHasStarted] = useState(false);
+  
+  // ref to store interval for cleanup
   const tickIntervalRef = useRef<NodeJS.Timeout>();
 
-  // Game tick logic
+  // main game loop - handles point generation and combo mechanics
   const gameTick = useCallback(() => {
     setGameState((prev) => {
       if (!prev.isPlaying || prev.winner) return prev;
 
       const now = Date.now();
       const updatedTeams = prev.teams.map((team) => {
-        // Check if combo expired
+        // handle combo expiration
         let isCombo = team.isCombo;
         let comboEndTime = team.comboEndTime;
 
@@ -78,7 +92,7 @@ const Index = () => {
           toast.info(`${team.name} combo ended!`, { icon: "⚡" });
         }
 
-        // Random combo activation
+        // randomly activate combos for excitement
         if (!isCombo && Math.random() < COMBO_CHANCE) {
           isCombo = true;
           comboEndTime = now + COMBO_DURATION;
@@ -88,12 +102,12 @@ const Index = () => {
           });
         }
 
-        // Calculate points to add
-        const basePoints = Math.floor(Math.random() * 6) + 5; // 5-10 points
+        // calculate points earned this tick
+        const basePoints = Math.floor(Math.random() * 6) + 5; // 5-10 points per tick
         const pointsToAdd = isCombo ? basePoints * 2 : basePoints;
         const newPoints = Math.min(team.points + pointsToAdd, targetPoints);
 
-        // Update streak
+        // track hot streaks for visual effects
         const newStreak = pointsToAdd >= 12 ? team.streak + 1 : Math.max(0, team.streak - 1);
 
         return {
@@ -106,7 +120,7 @@ const Index = () => {
         };
       });
 
-      // Track rankings for overtaking animation
+      // detect ranking changes for overtaking animations
       const newRankings = [...updatedTeams]
         .sort((a, b) => b.points - a.points)
         .map((t) => t.id);
@@ -115,7 +129,7 @@ const Index = () => {
         setPrevRankings(newRankings);
       }
 
-      // Detect clash moments (teams within 10 points)
+      // find teams that are super close (within 10 points) for clash effects
       const sortedByPoints = [...updatedTeams].sort((a, b) => b.points - a.points);
       const clashingTeams: TeamId[] = [];
       for (let i = 0; i < sortedByPoints.length - 1; i++) {
@@ -126,7 +140,7 @@ const Index = () => {
       }
       setClashTeams([...new Set(clashingTeams)]);
 
-      // Check for winner
+      // check if anyone won
       const winner = updatedTeams.find((team) => team.points >= targetPoints);
       if (winner) {
         setShowWinAnimation(true);
@@ -149,7 +163,7 @@ const Index = () => {
     });
   }, [targetPoints, prevRankings]);
 
-  // Countdown timer
+  // countdown timer before game starts
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => {
@@ -161,7 +175,7 @@ const Index = () => {
     }
   }, [countdown, hasStarted]);
 
-  // Setup game tick interval
+  // setup game tick interval when game is active
   useEffect(() => {
     if (gameState.isPlaying && !gameState.winner && hasStarted) {
       tickIntervalRef.current = setInterval(gameTick, TICK_INTERVAL);
@@ -171,6 +185,7 @@ const Index = () => {
       }
     }
 
+    // cleanup interval on unmount
     return () => {
       if (tickIntervalRef.current) {
         clearInterval(tickIntervalRef.current);
@@ -178,14 +193,13 @@ const Index = () => {
     };
   }, [gameState.isPlaying, gameState.winner, gameTick, hasStarted]);
 
-  // Join team handler
+  // player interaction handlers (kept for future use)
   const handleJoinTeam = (teamId: TeamId) => {
     setGameState((prev) => ({ ...prev, playerTeam: teamId }));
     const team = gameState.teams.find((t) => t.id === teamId);
     toast.success(`Joined ${team?.name}!`, { icon: "👥" });
   };
 
-  // Add point handler
   const handleAddPoint = () => {
     if (!gameState.playerTeam) return;
 
@@ -196,7 +210,6 @@ const Index = () => {
           : team
       );
 
-      // Check for winner
       const winner = updatedTeams.find((team) => team.points >= targetPoints);
       if (winner) {
         setShowWinAnimation(true);
@@ -221,7 +234,7 @@ const Index = () => {
     toast.success("+1 Point!", { icon: "⚡", duration: 1000 });
   };
 
-  // Toggle play/pause
+  // debug controls
   const handleTogglePlay = () => {
     setGameState((prev) => ({ ...prev, isPlaying: !prev.isPlaying }));
     toast.info(gameState.isPlaying ? "Game Paused" : "Game Resumed", {
@@ -229,7 +242,6 @@ const Index = () => {
     });
   };
 
-  // Restart game
   const handleRestart = () => {
     setGameState({
       teams: createInitialTeams(teamNames),
@@ -244,7 +256,6 @@ const Index = () => {
     toast.success("Game Restarted!", { icon: "🔄" });
   };
 
-  // Simulate win (debug)
   const handleSimulateWin = (teamId: TeamId) => {
     setGameState((prev) => {
       const updatedTeams = prev.teams.map((team) =>
@@ -261,12 +272,11 @@ const Index = () => {
     });
   };
 
-  // Handle closing win animation
   const handleCloseWinAnimation = () => {
     setShowWinAnimation(false);
   };
 
-  // Sort teams by points (descending)
+  // calculate sorted teams and winner
   const sortedTeams = [...gameState.teams].sort((a, b) => b.points - a.points);
   const winningTeam = gameState.winner
     ? gameState.teams.find((t) => t.id === gameState.winner)

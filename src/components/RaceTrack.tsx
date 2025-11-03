@@ -13,6 +13,11 @@ interface RaceTrackProps {
   isLastPlace: boolean;
 }
 
+/*
+  individual race track component - shows one team's progress bar
+  includes all the visual effects: combos, streaks, overtaking animations, hype moments
+  the track gets more intense as teams get close to winning (85%+)
+*/
 export const RaceTrack = ({ 
   team, 
   isWinner, 
@@ -22,31 +27,34 @@ export const RaceTrack = ({
   isClashing,
   isLastPlace 
 }: RaceTrackProps) => {
+  // calculate progress percentage
   const percentage = Math.min((team.points / targetPoints) * 100, 100);
-  const isCloseToWinning = percentage >= 85;
-  const isVeryCloseToWinning = percentage >= 95;
+  const isCloseToWinning = percentage >= 85; // start hype effects
+  const isVeryCloseToWinning = percentage >= 95; // intense hype effects
+  
+  // local state for animations
   const [showTrashTalk, setShowTrashTalk] = useState(false);
   const [prevRank, setPrevRank] = useState(rank);
   const [isBeingOvertaken, setIsBeingOvertaken] = useState(false);
   const [hypeEmojis, setHypeEmojis] = useState<Array<{ id: number; emoji: string; x: number; delay: number }>>([]);
 
-  // Generate floating hype emojis when close to winning
+  // spawn floating emojis when close to winning
   useEffect(() => {
-    if (isCloseToWinning && rank === 1) {
+    if (isCloseToWinning) {
       const emojis = ['🔥', '⚡', '💥', '✨'];
       const newHypeEmojis = Array.from({ length: 8 }, (_, i) => ({
         id: Date.now() + i,
         emoji: emojis[Math.floor(Math.random() * emojis.length)],
-        x: Math.random() * 90 + 5, // 5% to 95% across the track
+        x: Math.random() * 90 + 5,
         delay: Math.random() * 2,
       }));
       setHypeEmojis(newHypeEmojis);
     } else {
       setHypeEmojis([]);
     }
-  }, [isCloseToWinning, rank]);
+  }, [isCloseToWinning]);
 
-  // Detect when this team is being overtaken (rank increased)
+  // track overtaking for visual feedback
   useEffect(() => {
     if (rank > prevRank) {
       setIsBeingOvertaken(true);

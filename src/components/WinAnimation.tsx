@@ -12,7 +12,13 @@ interface WinAnimationProps {
   onContinue: () => void;
 }
 
-// Mock messages for teams (simulating chat)
+/*
+  3D victory screen with animated characters on podiums
+  shows top 3 teams with their animated characters and chat messages
+  uses three.js for 3D rendering with auto-rotating camera
+*/
+
+// chat messages that cycle every 3 seconds (simulates stream chat)
 const winnerMessages = [
   "Let's gooooo! 🎉",
   "We're unstoppable!",

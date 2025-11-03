@@ -11,6 +11,14 @@ interface Character3DProps {
   message: string;
 }
 
+/*
+  3D character component for victory podium
+  - winner does backflips and victory poses
+  - 2nd place stands calmly or claps
+  - 3rd place kneels and cries
+  click to toggle alternate poses
+  includes rank badge worn like a medal on the neck
+*/
 export const Character3D = ({ position, color, rank, teamName, message }: Character3DProps) => {
   const groupRef = useRef<THREE.Group>(null);
   const headRef = useRef<THREE.Mesh>(null);
