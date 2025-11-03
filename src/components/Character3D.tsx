@@ -232,6 +232,34 @@ export const Character3D = ({ position, color, rank, teamName, message }: Charac
         <meshStandardMaterial color={threeColor} />
       </mesh>
 
+      {/* Rank Badge on neck - like a medal */}
+      <Billboard position={[0, 0.5, 0.25]}>
+        <group>
+          {/* Medal circle background */}
+          <mesh position={[0, 0, 0]}>
+            <circleGeometry args={[0.18, 32]} />
+            <meshStandardMaterial 
+              color={rank === 1 ? "#FFD700" : rank === 2 ? "#C0C0C0" : "#CD7F32"}
+              metalness={0.9}
+              roughness={0.1}
+              emissive={rank === 1 ? "#FFD700" : rank === 2 ? "#C0C0C0" : "#CD7F32"}
+              emissiveIntensity={0.6}
+            />
+          </mesh>
+          
+          {/* Badge emoji - larger */}
+          <Text
+            position={[0, 0, 0.01]}
+            fontSize={0.28}
+            color="#000000"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}
+          </Text>
+        </group>
+      </Billboard>
+
       {/* Left Arm */}
       <mesh ref={leftArmRef} position={[-0.35, 0.4, 0]}>
         <cylinderGeometry args={[0.08, 0.08, 0.6, 16]} />

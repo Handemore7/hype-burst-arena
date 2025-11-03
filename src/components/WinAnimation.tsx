@@ -110,15 +110,15 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
     amber: "hsl(43 96% 56%)",
   };
 
-  // Saturated versions for podiums and titles
+  // Saturated versions for podiums and titles - More vivid and bright
   const saturatedColorMap: Record<string, string> = {
-    red: "hsl(0 100% 65%)",
-    purple: "hsl(271 100% 70%)",
-    blue: "hsl(217 100% 70%)",
-    green: "hsl(142 90% 55%)",
-    yellow: "hsl(48 100% 60%)",
-    cyan: "hsl(199 100% 60%)",
-    amber: "hsl(43 100% 65%)",
+    red: "hsl(5 100% 50%)",
+    purple: "hsl(280 100% 50%)",
+    blue: "hsl(220 100% 50%)",
+    green: "hsl(120 100% 50%)",
+    yellow: "hsl(30 100% 50%)",
+    cyan: "hsl(220 100% 50%)",
+    amber: "hsl(50 100% 50%)",
   };
 
   // Sort teams by rank (winner first, then by points)
@@ -265,6 +265,22 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
             
             const teamSaturatedColor = saturatedColorMap[item.team.color];
             
+            // Convert HSL string to THREE.Color
+            const parseSaturatedColor = (hslString: string) => {
+              const match = hslString.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
+              if (match) {
+                const [, h, s, l] = match;
+                return new THREE.Color().setHSL(
+                  parseInt(h) / 360,
+                  parseInt(s) / 100,
+                  parseInt(l) / 100
+                );
+              }
+              return new THREE.Color(hslString);
+            };
+            
+            const saturatedThreeColor = parseSaturatedColor(teamSaturatedColor);
+            
             return (
               <group key={item.team.id}>
                 {/* Character */}
@@ -276,28 +292,46 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
                   message={item.message}
                 />
 
-                {/* Podium - Bright and vibrant! */}
+                {/* Podium - Team colored with high saturation */}
                 <mesh position={[item.position[0], item.height / 2 - 0.5, item.position[2]]}>
-                  <boxGeometry args={[1.5, item.height, 1.5]} />
+                  <boxGeometry args={[1.8, item.height, 1.8]} />
                   <meshStandardMaterial
-                    color={item.rank === 1 ? "#FFD700" : item.rank === 2 ? "#E8E8E8" : "#FF8C42"}
-                    metalness={0.9}
-                    roughness={0.1}
-                    emissive={item.rank === 1 ? "#FFD700" : item.rank === 2 ? "#C0C0C0" : "#FF8C42"}
-                    emissiveIntensity={item.rank === 1 ? 0.4 : 0.3}
+                    color={saturatedThreeColor}
+                    metalness={0.8}
+                    roughness={0.2}
+                    emissive={saturatedThreeColor}
+                    emissiveIntensity={0.6}
                   />
                 </mesh>
 
-                {/* Points on front wall of podium */}
+                {/* Points score - Large and centered */}
                 <Text
-                  position={[item.position[0], item.height / 2, item.position[2] + 0.76]}
-                  fontSize={0.4}
+                  position={[item.position[0], item.height / 2 + 0.2, item.position[2] + 0.91]}
+                  fontSize={0.55}
+                  color="#000000"
+                  anchorX="center"
+                  anchorY="middle"
+                  fontWeight="black"
+                  outlineWidth={0.03}
+                  outlineColor="#FFFFFF"
+                >
+                  {Math.floor(item.team.points)}
+                </Text>
+
+                {/* Team name - Centered below score */}
+                <Text
+                  position={[item.position[0], item.height / 2 - 0.35, item.position[2] + 0.91]}
+                  fontSize={0.2}
                   color="#000000"
                   anchorX="center"
                   anchorY="middle"
                   fontWeight="bold"
+                  maxWidth={1.6}
+                  textAlign="center"
+                  outlineWidth={0.015}
+                  outlineColor="#FFFFFF"
                 >
-                  {Math.floor(item.team.points)}
+                  {item.team.name}
                 </Text>
               </group>
             );
@@ -323,7 +357,7 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
             autoRotateSpeed={0.5}
             minPolarAngle={Math.PI / 4}
             maxPolarAngle={Math.PI / 2.2}
-            target={[0, 2, 0]}
+            target={[0, 2.5, 0]}
           />
         </Canvas>
       )}
