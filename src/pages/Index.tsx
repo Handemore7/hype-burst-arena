@@ -46,7 +46,7 @@ const createInitialTeams = (names: string[]): Team[] => {
 };
 
 const Index = () => {
-  const [targetPoints, setTargetPoints] = useState(200);
+  const [targetPoints, setTargetPoints] = useState(500);
   const [teamNames] = useState(getRandomNames());
   const [gameState, setGameState] = useState<GameState>({
     teams: createInitialTeams(teamNames),
@@ -311,8 +311,8 @@ const Index = () => {
       </header>
 
       {/* Main Game Area */}
-      <main className="container mx-auto px-6 py-12">
-        <div className="space-y-2">
+      <main className="container mx-auto px-6 py-4">
+        <div className="relative">
           {sortedTeams.map((team, index) => {
             const prevRank = prevRankings.indexOf(team.id) + 1;
             const currentRank = index + 1;
@@ -321,19 +321,29 @@ const Index = () => {
             const isLastPlace = currentRank === sortedTeams.length;
             
             return (
-              <RaceTrack
+              <div
                 key={team.id}
-                team={team}
-                isWinner={team.id === gameState.winner}
-                rank={currentRank}
-                targetPoints={targetPoints}
-                isOvertaking={isOvertaking}
-                isClashing={isClashing}
-                isLastPlace={isLastPlace}
-              />
+                className="transition-all duration-700 ease-out"
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  top: `${(currentRank - 1) * 200}px`
+                }}
+              >
+                <RaceTrack
+                  team={team}
+                  isWinner={team.id === gameState.winner}
+                  rank={currentRank}
+                  targetPoints={targetPoints}
+                  isOvertaking={isOvertaking}
+                  isClashing={isClashing}
+                  isLastPlace={isLastPlace}
+                />
+              </div>
             );
           })}
         </div>
+        <div style={{ height: `${sortedTeams.length * 170}px` }} />
 
         {/* Status Message */}
         {!gameState.isPlaying && !gameState.winner && (
@@ -357,6 +367,7 @@ const Index = () => {
         playerTeam={gameState.playerTeam}
         isPlaying={gameState.isPlaying}
         targetPoints={targetPoints}
+        teams={gameState.teams}
         onJoinTeam={handleJoinTeam}
         onAddPoint={handleAddPoint}
         onTogglePlay={handleTogglePlay}

@@ -73,7 +73,7 @@ export const RaceTrack = ({
           <div
             className={cn(
               "w-10 h-10 rounded-full flex items-center justify-center text-lg font-black border-2",
-              rank === 1 && "bg-gradient-winner border-winner-gold shadow-glow-winner animate-pulse-glow",
+              rank === 1 && "bg-gradient-winner border-winner-gold shadow-glow-winner",
               rank === 2 && "bg-muted border-muted-foreground/30",
               rank === 3 && "bg-card border-border"
             )}
@@ -82,10 +82,9 @@ export const RaceTrack = ({
           </div>
           
           {/* Team Name */}
-          <h3 className={cn(
-            "text-2xl font-black transition-all",
-            rank === 1 && "text-winner-gold-glow"
-          )}>
+          <h3 className="text-2xl font-black transition-all"
+            style={{ color: colorMap[team.color] }}
+          >
             {team.name}
           </h3>
 
@@ -109,10 +108,9 @@ export const RaceTrack = ({
         </div>
 
         {/* Score */}
-        <span className={cn(
-          "text-4xl font-black tabular-nums",
-          rank === 1 && "text-winner-gold-glow"
-        )}>
+        <span className="text-4xl font-black tabular-nums transition-all"
+          style={{ color: colorMap[team.color] }}
+        >
           {Math.floor(team.points)}
         </span>
       </div>
@@ -121,17 +119,38 @@ export const RaceTrack = ({
       <div className="relative">
         {/* Track Background */}
         <div className={cn(
-          "relative h-24 bg-card rounded-xl border-2 overflow-visible transition-all",
-          isCloseToWinning && "border-winner-gold shadow-glow-winner animate-pulse",
-          isClashing && "animate-clash-flash"
+          "relative h-24 bg-card rounded-xl border-4 overflow-visible transition-all"
         )}
-          style={isClashing ? { borderColor: colorMap[team.color] } : {}}
+          style={{ 
+            borderColor: isCloseToWinning ? 'hsl(var(--winner-gold))' : colorMap[team.color]
+          }}
         >
-          {/* Track Lines */}
+          {/* Progress Trail - Filled portion behind character */}
+          <div 
+            className="absolute inset-y-0 left-0 rounded-l-lg transition-all duration-300"
+            style={{ 
+              width: `${percentage}%`,
+              background: `linear-gradient(90deg, ${colorMap[team.color]}40, ${colorMap[team.color]}20)`,
+              boxShadow: `inset 0 0 20px ${colorMap[team.color]}30`
+            }}
+          />
+
+          {/* Track Lines - Base (unfilled) */}
           <div className="absolute inset-0 flex items-center">
             <div className="w-full h-1 bg-border/30" style={{ 
               backgroundImage: 'repeating-linear-gradient(90deg, hsl(var(--border)) 0px, hsl(var(--border)) 20px, transparent 20px, transparent 40px)'
             }} />
+          </div>
+
+          {/* Track Lines - Filled with team color */}
+          <div className="absolute inset-0 flex items-center overflow-hidden">
+            <div 
+              className="h-1 transition-all duration-300"
+              style={{ 
+                width: `${percentage}%`,
+                backgroundImage: `repeating-linear-gradient(90deg, ${colorMap[team.color]} 0px, ${colorMap[team.color]} 20px, transparent 20px, transparent 40px)`
+              }} 
+            />
           </div>
 
           {/* Finish Line */}

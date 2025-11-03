@@ -162,8 +162,8 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-primary/20 via-background to-accent/20">
       {/* Title */}
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-10 text-center pointer-events-none">
-        <h1 className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-winner-gold via-winner-gold-glow to-winner-gold animate-pulse drop-shadow-[0_0_30px_rgba(255,215,0,0.8)]">
+      <div className="absolute w-full top-8 left-1/2 -translate-x-1/2 z-10 text-center pointer-events-none">
+        <h1 className="text-7xl pb-5 font-black text-transparent bg-clip-text bg-gradient-to-r from-winner-gold via-winner-gold-glow to-winner-gold animate-pulse drop-shadow-[0_0_30px_rgba(255,215,0,0.8)]">
           🏆 {winningTeam.name} WINS! 🏆
         </h1>
         <p className="text-2xl text-foreground mt-2 animate-fade-in font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
@@ -202,7 +202,7 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
           {/* Sky background sphere with stars */}
           <mesh>
             <sphereGeometry args={[100, 32, 32]} />
-            <meshBasicMaterial color="#0a0a1a" side={THREE.BackSide} />
+            <meshBasicMaterial color="#111140" side={THREE.BackSide} />
           </mesh>
 
           {/* Random stars scattered in the sky */}
@@ -287,6 +287,7 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
             autoRotateSpeed={0.5}
             minPolarAngle={Math.PI / 4}
             maxPolarAngle={Math.PI / 2.2}
+            target={[0, 2, 0]}
           />
         </Canvas>
       )}
