@@ -110,6 +110,17 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
     amber: "hsl(43 96% 56%)",
   };
 
+  // Saturated versions for podiums and titles
+  const saturatedColorMap: Record<string, string> = {
+    red: "hsl(0 100% 65%)",
+    purple: "hsl(271 100% 70%)",
+    blue: "hsl(217 100% 70%)",
+    green: "hsl(142 90% 55%)",
+    yellow: "hsl(48 100% 60%)",
+    cyan: "hsl(199 100% 60%)",
+    amber: "hsl(43 100% 65%)",
+  };
+
   // Sort teams by rank (winner first, then by points)
   const sortedTeams = [...teams].sort((a, b) => {
     if (a.id === winningTeam.id) return -1;
@@ -119,6 +130,17 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
 
   // Get top 3 teams
   const topThree = sortedTeams.slice(0, 3);
+
+  // Calculate victory type based on point difference
+  const pointDifference = topThree[0].points - topThree[1].points;
+  let victoryType = "Close Victory!";
+  if (pointDifference >= 100) {
+    victoryType = "Absolute Victory!";
+  } else if (pointDifference >= 50) {
+    victoryType = "Dominant Victory!";
+  } else if (pointDifference >= 20) {
+    victoryType = "Nice Victory!";
+  }
 
   // Rotate messages every 3 seconds
   useEffect(() => {
@@ -163,11 +185,23 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
     <div className="fixed inset-0 z-50 bg-gradient-to-b from-primary/20 via-background to-accent/20">
       {/* Title */}
       <div className="absolute w-full top-8 left-1/2 -translate-x-1/2 z-10 text-center pointer-events-none">
-        <h1 className="text-7xl pb-5 font-black text-transparent bg-clip-text bg-gradient-to-r from-winner-gold via-winner-gold-glow to-winner-gold animate-pulse drop-shadow-[0_0_30px_rgba(255,215,0,0.8)]">
+        <h1 
+          className="text-7xl pb-5 font-black animate-pulse drop-shadow-[0_0_30px_rgba(255,215,0,0.8)]"
+          style={{ 
+            color: saturatedColorMap[winningTeam.color],
+            textShadow: `0 0 40px ${saturatedColorMap[winningTeam.color]}, 0 0 80px ${saturatedColorMap[winningTeam.color]}`,
+          }}
+        >
           🏆 {winningTeam.name} WINS! 🏆
         </h1>
-        <p className="text-2xl text-foreground mt-2 animate-fade-in font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
-          {Math.floor(topThree[0].points)} Points - Absolute Victory!
+        <p 
+          className="text-2xl mt-2 animate-fade-in font-bold"
+          style={{ 
+            color: saturatedColorMap[winningTeam.color],
+            textShadow: `0 0 20px ${saturatedColorMap[winningTeam.color]}`,
+          }}
+        >
+          {Math.floor(topThree[0].points)} Points - {victoryType}
         </p>
       </div>
 
@@ -228,6 +262,8 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
           {/* Characters and podiums */}
           {displayOrder.map((item, index) => {
             if (!item.team) return null;
+            
+            const teamSaturatedColor = saturatedColorMap[item.team.color];
             
             return (
               <group key={item.team.id}>
@@ -301,30 +337,6 @@ export const WinAnimation = ({ teams, winningTeam, onContinue }: WinAnimationPro
         >
           Continue to Next Round
         </Button>
-      </div>
-
-      {/* Podium labels */}
-      <div className="absolute bottom-32 left-1/2 -translate-x-1/2 w-full max-w-4xl flex justify-between px-8 pointer-events-none">
-        {displayOrder.map((item, index) => {
-          if (!item.team) return <div key={index} />;
-          
-          return (
-            <div
-              key={item.team.id}
-              className="text-center"
-              style={{
-                transform: index === 0 ? 'translateX(-50%)' : index === 2 ? 'translateX(50%)' : 'none'
-              }}
-            >
-              <p className={`text-2xl font-black ${item.rank === 1 ? 'text-winner-gold-glow' : 'text-muted-foreground'}`}>
-                {item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : '🥉'} {item.team.name}
-              </p>
-              <p className={`text-xl font-bold ${item.rank === 1 ? 'text-winner-gold' : 'text-muted-foreground'}`}>
-                {Math.floor(item.team.points)} pts
-              </p>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
