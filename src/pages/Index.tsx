@@ -312,10 +312,12 @@ const Index = () => {
 
       {/* Main Game Area */}
       <main className="container mx-auto px-6 py-4">
-        <div className="relative">
-          {sortedTeams.map((team, index) => {
+        <div className="relative" style={{ minHeight: `${gameState.teams.length * 170}px` }}>
+          {gameState.teams.map((team) => {
+            // Find current rank by sorting
+            const currentRankIndex = sortedTeams.findIndex(t => t.id === team.id);
+            const currentRank = currentRankIndex + 1;
             const prevRank = prevRankings.indexOf(team.id) + 1;
-            const currentRank = index + 1;
             const isOvertaking = prevRank > currentRank;
             const isClashing = clashTeams.includes(team.id);
             const isLastPlace = currentRank === sortedTeams.length;
@@ -323,11 +325,10 @@ const Index = () => {
             return (
               <div
                 key={team.id}
-                className="transition-all duration-700 ease-out"
+                className="transition-all duration-700 ease-in-out absolute w-full"
                 style={{
-                  position: 'absolute',
-                  width: '100%',
-                  top: `${(currentRank - 1) * 200}px`
+                  top: `${currentRankIndex * 170}px`,
+                  zIndex: isOvertaking ? 10 : 1,
                 }}
               >
                 <RaceTrack
@@ -343,7 +344,6 @@ const Index = () => {
             );
           })}
         </div>
-        <div style={{ height: `${sortedTeams.length * 170}px` }} />
 
         {/* Status Message */}
         {!gameState.isPlaying && !gameState.winner && (

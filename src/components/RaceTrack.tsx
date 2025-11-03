@@ -25,6 +25,18 @@ export const RaceTrack = ({
   const percentage = Math.min((team.points / targetPoints) * 100, 100);
   const isCloseToWinning = percentage >= 85;
   const [showTrashTalk, setShowTrashTalk] = useState(false);
+  const [prevRank, setPrevRank] = useState(rank);
+  const [isBeingOvertaken, setIsBeingOvertaken] = useState(false);
+
+  // Detect when this team is being overtaken (rank increased)
+  useEffect(() => {
+    if (rank > prevRank) {
+      setIsBeingOvertaken(true);
+      const timer = setTimeout(() => setIsBeingOvertaken(false), 700);
+      return () => clearTimeout(timer);
+    }
+    setPrevRank(rank);
+  }, [rank, prevRank]);
 
   const trashTalkMessages = [
     "💀 OVERTAKE!",
@@ -65,7 +77,13 @@ export const RaceTrack = ({
   };
 
   return (
-    <div className="relative mb-8">
+    <div 
+      className={cn(
+        "relative mb-8 transition-all duration-700",
+        isOvertaking && "scale-105 z-20",
+        isBeingOvertaken && "opacity-80 scale-95"
+      )}
+    >
       {/* Team Name & Score Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
